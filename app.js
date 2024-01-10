@@ -74,7 +74,7 @@ const store = new MongoStore({
 app.use(
   session({
     store: store,
-    secret: process.env.SECRET,
+    secret: process.env.SECRET, 
     resave: false,
     saveUninitialized: false,
     cookie: {
