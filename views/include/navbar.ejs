@@ -121,6 +121,8 @@
 <nav class="navbar navbar-expand-md navbar-light bg-body-light sticky-top border-bottom">
   <div class="container-fluid">
     <a class="navbar-brand" href="/user/${req.user._id}"><i class="fa-regular fa-compass"></i></a>
+    <a class="nav-link add-notes-link" href="/user/${req.user._id}/new"><i class="fa-solid fa-plus add"></i>Add Notes &nbsp; </a>
+
     <button class="navbar-toggler " type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon "></span>
     </button>
@@ -131,7 +133,6 @@
         </li>
       </ul>
       <div class="navbar-nav  login-btns" id="navbarNav">
-        <a class="nav-link add-notes-link" href="/user/${req.user._id}/new"><i class="fa-solid fa-plus add"></i>Add Notes &nbsp; </a>
         <a class="nav-link delete-all-link cursor-pointer" href="/user/${req.user._id}/todos">Add Todo</a>
       </div>
       <form id="searchForm" class="d-flex ms-auto" role="search">
@@ -140,8 +141,6 @@
       </form>
 
       <div class="navbar-nav ms-auto login-btns" id="navbarNav">
-        <!-- Add Notes link for mobile screens -->
-
         <% if(!currentUser){ %>
           <a class="nav-link" aria-current="page" href="/signup">Sign-up</a>
           <a class="nav-link" href="/login">Login</a>
