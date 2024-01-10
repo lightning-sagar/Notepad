@@ -1,0 +1,94 @@
+<% layout('/layout/boilerplate.ejs') %>
+
+<style>
+  #notepad {
+    width: 90%;
+    margin: 20px auto;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    border-radius: 8px;
+    height: 600px;
+    position: relative;
+    font-family: 'Arial', sans-serif;
+  }
+
+  input#noteTitle {
+    width: calc(100% - 20px);
+    margin-bottom: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  input#noteTitle:focus {
+    outline: none;
+  }
+
+  textarea {
+    width: calc(100% - 20px);
+    min-height: 437px;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    resize: none;
+    border: none;
+    font-size: 16px;
+    color: #555;
+  }
+
+  textarea:focus {
+    outline: none;
+  }
+
+  button {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+
+  button:hover {
+    background-color: #2980b9;
+  }
+
+  form.delete-form {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+
+  form.delete-form button {
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+
+  form.delete-form button:hover {
+    background-color: #c0392b;
+  }
+</style>
+
+<div id="notepad">
+  <form action="<%= note._id %>?_method=PUT" method="POST" class="note-form form form-inline form-group">
+    <input type="text" id="noteTitle" name="title" value="<%= note.title %>">
+    <textarea id="noteContent" placeholder="Start typing your note..." name="note"><%= note.note %></textarea>
+    <button id="saveNote">Save</button>
+  </form>
+  <form action="<%= note._id %>?_method=DELETE" method="POST" class="delete-form">
+    <button>Delete</button>
+  </form>
+</div>

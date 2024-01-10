@@ -1,0 +1,39 @@
+<% layout('layout/boilerplate') %>
+
+<div class="row mt-5">
+  <div class="col-md-6 offset-md-3">
+    <h3 class="mb-4">Sign Up</h3>
+    
+    <form class="needs-validation" novalidate method="POST" action="/signup">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input name="user[username]" id="username" required class="form-control" type="text" />
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input name="user[email]" id="email" required class="form-control" type="email" />
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input name="user[password]" id="password" required class="form-control" type="password" />
+      </div>
+
+      <button class="btn btn-success btn-block">Sign Up</button>
+    </form>
+
+    <hr class="my-4">
+
+    <% if (error && error.length) { %>
+      <div class="alert alert-danger" role="alert">
+        <%= error %>
+      </div>
+    <% } %>
+
+    <p class="text-center">
+        <a href="/auth/google" class="btn btn-primary btn-block"><i class="fa-brands fa-google"></i>&nbsp;&nbsp;Sign Up with Google</a>
+    </p>
+
+  </div>
+</div>

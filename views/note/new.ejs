@@ -1,0 +1,77 @@
+<% layout('/layout/boilerplate.ejs') %>
+
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+  }
+
+  #notepad {
+    width: 90%;
+    margin: 20px auto;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    border-radius: 8px;
+    height: 600px;
+  }
+
+  input#noteTitle {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    border: none;
+    font-size: 16px;
+  }
+
+  input#noteTitle:focus {
+    outline: none;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 437px;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    resize: none;
+    border: none;
+    font-size: 14px;
+  }
+
+  textarea:focus {
+    outline: none;
+  }
+
+  button {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+
+  button:hover {
+    background-color: #2980b9;
+  }
+</style>
+
+</head>
+
+<body>
+
+<div id="notepad">
+  <form action="/user/${req.user._id}" method="POST" class="note-form form form-inline form-group">
+    <input type="text" id="noteTitle" placeholder="Enter the title..." name="title">
+    <textarea id="noteContent" placeholder="Start typing your note..." name="note"></textarea>
+    <button id="saveNote">Save</button>
+  </form>
+</div>

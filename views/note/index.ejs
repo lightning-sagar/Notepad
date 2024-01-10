@@ -1,0 +1,56 @@
+<% layout('/layout/boilerplate.ejs') %>
+
+<style>
+  .title {
+    text-align: center;
+  }
+
+  .card:hover .edit-icon {
+    display: inline-block;
+  }
+
+  .edit-icon {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #333;
+    cursor: pointer;
+    font-size: 20px;
+  }
+
+  .iconssad:hover {
+    color: #7142fe;
+  }
+
+  .news {
+    text-align: center;
+  }
+</style>
+
+<% if (allNotes.length !== 0) { %>
+  <div class="container mt-4">
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-1 g-4">
+      <% allNotes.forEach((note) => { %>
+        <a href="/user/note/<%= note._id %>" class="text-decoration-none">
+          <div class="col">
+            <div class="card h-100 position-relative">
+              <img src="https://www.dotsanddoodles.in/cdn/shop/products/BIG_NOTEPADS-01.jpg?v=1550228386" class="card-img-top" alt="Note Image">
+              <div class="card-body">
+                <h5 class="card-title title"><%= note.title %></h5>
+                <!-- Edit icon -->
+                <i class="edit-icon fas fa-edit"></i>
+              </div>
+            </div>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+<% } else { %>
+  <div class="col">
+    <div class="news mt-3">
+      <h5 class="card-title">No Notes Found</h5>
+    </div>
+  </div>
+<% } %>

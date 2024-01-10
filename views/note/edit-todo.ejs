@@ -1,0 +1,68 @@
+<% layout('/layout/boilerplate.ejs') %>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .custom-todo-container {
+        max-width: 400px;
+        margin: 50px auto;
+    }
+    .custom-list-item {
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: #fff;
+        border: 1px solid #d6d6d6;
+        border-radius: 5px;
+        display: flex; /* Display form elements in a flex container */
+        align-items: center; /* Center items vertically */
+    }
+    .custom-delete-btn {
+        background-color: #e44d4d;
+        border: none;
+        cursor: pointer;
+        margin-left: auto; /* Push the button to the right */
+    }
+    .custom-edit-btn,
+    .custom-add-btn {
+        background-color: #007bff;
+        border: none;
+        cursor: pointer;
+        margin-left: 5px; /* Add some spacing between buttons */
+    }
+    .custom-input-group {
+        margin-bottom: 15px;
+    }
+    .custom-todotext {
+        border: none;
+        border-bottom: 1px solid #d6d6d6;
+        width: calc(70% - 10px); /* Adjust the width */
+        margin-right: 10px; /* Add some spacing between text input and buttons */
+    }
+    .custom-todotext:focus {
+        outline: none;
+        border-bottom: 1px solid #007bff;
+    }
+</style>
+
+<body>
+    <div class="container custom-todo-container">
+        <h1 class="text-center mb-4">Todo List</h1>
+        <div class="custom-input-group mb-3">
+            <form id="todoForm" action="/todoadd" method="post" class="d-flex">
+                <input type="text" id="todoInput" class="form-control custom-todotext" name="text" placeholder="Add a new todo" aria-label="Add a new todo" aria-describedby="addTodoBtn">
+                <button class="btn btn-primary custom-add-btn" type="submit" id="addTodoBtn">Add</button>
+            </form>
+        </div>
+        <ul class="list-group" id="todoList">
+            <% allTodos.forEach(todo => { %>
+                <li class="list-group-item custom-list-item">
+                    <form action="/user/<%= currentUser._id %>/todos/<%= todo._id %>?_method=PUT" method="post">
+                        <input type="text" name="text" value="<%= todo.text %>" class="custom-todotext">
+                        <button class="custom-edit-btn " type="submit">Save</button>
+                    </form>
+                </li>
+            <% }); %>
+        </ul>
+    </div>
+</body>
