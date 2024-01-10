@@ -1,8 +1,28 @@
 <% layout('/layout/boilerplate.ejs') %>
+<style>
+  
+    .bottom-link {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      color: #333;
+      cursor: pointer;
+      font-size: 20px;
+    }
+  
+    .bottom-link:hover {
+      color: #7142fe;
+    }
+  </style>
 <div class="container">
     <div class="row">
         <div class="col text-center mt-3">
             <h4>Please login</h4>
         </div>
     </div>
+
+    <!-- "Add Notes" link at the bottom left corner -->
+    <a class="nav-link bottom-link" href="/user/${req.user._id}/new"><i class="fa-solid fa-plus add"></i></a>
 </div>
+
+

@@ -26,6 +26,18 @@
   .news {
     text-align: center;
   }
+  .bottom-link {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    color: #333;
+    cursor: pointer;
+    font-size: 20px;
+  }
+
+  .bottom-link:hover {
+    color: #7142fe;
+  }
 </style>
 
 <% if (allNotes.length !== 0) { %>
@@ -54,3 +66,4 @@
     </div>
   </div>
 <% } %>
+<a class="nav-link add-notes-link bottom" href="/user/${req.user._id}/new"><i class="fa-solid fa-plus add"></i></a>

@@ -131,7 +131,7 @@
         </li>
       </ul>
       <div class="navbar-nav  login-btns" id="navbarNav">
-        <a class="nav-link add-notes-link" href="/user/${req.user._id}/new">Add Notes &nbsp; <i class="fa-solid fa-plus add"></i></a>
+        <a class="nav-link add-notes-link" href="/user/${req.user._id}/new"><i class="fa-solid fa-plus add"></i>Add Notes &nbsp; </a>
         <a class="nav-link delete-all-link cursor-pointer" href="/user/${req.user._id}/todos">Add Todo</a>
       </div>
       <form id="searchForm" class="d-flex ms-auto" role="search">
@@ -141,7 +141,6 @@
 
       <div class="navbar-nav ms-auto login-btns" id="navbarNav">
         <!-- Add Notes link for mobile screens -->
-        <a class="nav-link add-notes-link-mobile" href="/user/${req.user._id}/new">Add Notes &nbsp; <i class="fa-solid fa-plus add"></i></a>
 
         <% if(!currentUser){ %>
           <a class="nav-link" aria-current="page" href="/signup">Sign-up</a>
@@ -153,6 +152,7 @@
       </div>
     </div>
   </div>
+
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-e0e56b5b212aa50515553528fd6490f55f97c6a9f723d919484f9c35a06d72b9" crossorigin="anonymous"></script>
