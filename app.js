@@ -73,7 +73,7 @@ const store = MongoStore.create({
   mongoUrl: db_url,
   secret: process.env.SECRET,
   touchAfter: 24 * 60 * 60
-})
+});
 
 const sessionOption = { 
   store: store,
@@ -85,9 +85,9 @@ const sessionOption = {
     expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
     maxAge: 1000 * 60 * 60 * 24 * 7
   }
-}
+};
 
-app.use(session(sessionOption ));
+app.use(session(sessionOption));
 
 store.on("error", function (e) {
   console.log("SESSION STORE ERROR", e)
