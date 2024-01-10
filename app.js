@@ -7,12 +7,12 @@ const methodOverride = require('method-override');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const User = require('./models/user.js');
-const session = require('express-session');
 const flash = require('connect-flash');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const Todo = require('./models/todo');
-const MongoStore = require('connect-mongo')(session);
+const session = require('express-session');
+const MongoStore = require('connect-mongo')
 
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const app = express();
