@@ -12,7 +12,7 @@ const flash = require('connect-flash');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const Todo = require('./models/todo');
-const MongoStore = require('connect-mongo');
+const MongoStore = require('connect-mongo')(session);
 
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const app = express();
@@ -69,25 +69,25 @@ main().catch((err) =>
 );
 
 
-const store = MongoStore.create({
+const store = new MongoStore({
   mongoUrl: db_url,
   secret: process.env.SECRET,
-  touchAfter: 24 * 60 * 60
+  touchAfter: 24 * 60 * 60,
 });
 
-const sessionOption = { 
-  store: store,
-  secret: process.env.SECRET,
-  resave: false,
-  saveUninitialized: false, 
-  cookie: {
-    httpOnly: true,
-    expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
-    maxAge: 1000 * 60 * 60 * 24 * 7
-  }
-};
-
-app.use(session(sessionOption));
+app.use(
+  session({
+    store: store,
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    },
+  })
+);
 
 store.on("error", function (e) {
   console.log("SESSION STORE ERROR", e)
@@ -295,9 +295,9 @@ app.post('/user/:id', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.get('user/todolist', ensureAuthenticated, (req, res) => {
+app.get('/user/todolist', ensureAuthenticated, (req, res) => {
   res.render('note/todolist.ejs');
-})
+});
 
 
 app.get('/user/:id/todos/', ensureAuthenticated, async (req, res) => {
