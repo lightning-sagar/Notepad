@@ -392,7 +392,8 @@ app.delete('/user/:id/deleteAll', async (req, res) => {
 
 app.get('/auth/google',
   passport.authenticate('google', { scope:
-      [ 'email', 'profile' ] }
+    ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email']
+   }
 ));
 
 app.get( '/auth/google/callback',
