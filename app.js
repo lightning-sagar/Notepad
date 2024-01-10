@@ -32,16 +32,7 @@ const ensureAuthenticated = (req, res, next) => {
   res.redirect('/login');
 };
 
-app.use(session({ 
-  secret: process.env.SECRET,
-  resave: false,
-  saveUninitialized: false, 
-  cookie: {
-    httpOnly: true,
-    expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
-    maxAge: 1000 * 60 * 60 * 24 * 7
-  }
-}));
+
 
 
 app.use(passport.initialize());
@@ -83,6 +74,20 @@ const store = MongoStore.create({
   secret: process.env.SECRET,
   touchAfter: 24 * 60 * 60
 })
+
+const sessionOption = { 
+  store: store,
+  secret: process.env.SECRET,
+  resave: false,
+  saveUninitialized: false, 
+  cookie: {
+    httpOnly: true,
+    expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+    maxAge: 1000 * 60 * 60 * 24 * 7
+  }
+}
+
+app.use(session(sessionOption ));
 
 store.on("error", function (e) {
   console.log("SESSION STORE ERROR", e)
@@ -151,7 +156,6 @@ app.post('/signup', async (req, res) => {
 
     const registeredUser = await User.register(newUser, password);
 
-    // Sending a welcome email
     await sendWelcomeEmail(email);
 
     req.login(registeredUser, (err) => {
