@@ -35,13 +35,10 @@ const ensureAuthenticated = (req, res, next) => {
 
 
 
-app.use(passport.initialize());
 
 
 app.use(flash()); 
 
-app.use(passport.initialize());
-app.use(passport.session());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(methodOverride('_method'));
@@ -68,7 +65,6 @@ main().catch((err) =>
   console.log(err)
 );
 
-
 const store = new MongoStore({
   mongoUrl: db_url,
   secret: process.env.SECRET,
@@ -90,8 +86,11 @@ app.use(
 );
 
 store.on("error", function (e) {
-  console.log("SESSION STORE ERROR", e)
-})
+  console.log("SESSION STORE ERROR", e);
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use((req, res, next) => {
   res.locals.success = req.flash('success');
