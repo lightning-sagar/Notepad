@@ -1,6 +1,6 @@
 <% layout('/layout/boilerplate.ejs') %>
 <style>
-  
+
     .bottom-link {
       position: fixed;
       bottom: 10px;
@@ -21,5 +21,37 @@
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+<script>
+  // Initialize Darkmode
+  const options = {
+    bottom: '64px',
+    right: 'unset',
+    left: '32px',
+    time: '0.5s',
+    mixColor: '#fff',
+    backgroundColor: '#fff',
+    buttonColorDark: '#100f2c',
+    buttonColorLight: '#fff',
+    saveInCookies: false,
+    label: '🌓',
+    autoMatchOsTheme: true
+  }
 
+  const darkmode = new Darkmode(options);
+  
+  // Toggle dark mode on a button click, for example
+  const toggleButton = document.getElementById('toggle-dark-mode');
+  toggleButton.addEventListener('click', () => {
+    darkmode.toggle();
+  });
+
+  // Add the Darkmode.js widget
+  darkmode.showWidget();
+  
+  // Initial toggle (optional)
+  darkmode.toggle();
+  
+  console.log(darkmode.isActivated()); // true
+</script>
 

@@ -1,9 +1,11 @@
+
 body{
     font-family: 'Playpen Sans', cursive !important;
     font-family: 'Plus Jakarta Sans', sans-serif !important;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+
 }
 
 .container{
@@ -20,9 +22,10 @@ body{
     font-size: 2rem;
 }
 
-.nav-link{
-    color: #222222 !important;
+.navbar-toggler-icon {
+    background-color: #7142fe!important;
 }
+
 
 .f-info-links a{
     text-decoration: none  ;
@@ -113,8 +116,8 @@ body{
 }
 
 
-#map { 
-    height: 100px;
-    width: 100px;
-    
+
+.list-group-flush{
+    background:#333;
+    color: #fff;
 }
