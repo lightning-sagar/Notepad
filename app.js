@@ -64,7 +64,7 @@ console.log(process.env.ATLAS_DB);
 
 
 async function main() {
-  await mongoose.connect('mongodb://127.0.0.1:27017/Note');
+  await mongoose.connect(process.env.ATLAS_DB);
   console.log('Connected to DB');
 }
 
@@ -72,10 +72,21 @@ main().catch((err) =>
   console.log(err)
 );
 
+const store = MongoStore.create({
+  mongoUrl: process.env.ATLAS_DB,
+  touchAfter: 24 * 60 * 60,
+  crypto: {
+    secret: process.env.SECRET
+  }
+})
 
+store.on('error', function (e) {
+  console.log('session store error', e)
+})
 
 app.use(
   session({
+    store,
     secret: process.env.SECRET,
     resave: true,
     saveUninitialized: true,
@@ -86,6 +97,8 @@ app.use(
     },
   })
 );
+
+
 
 app.use(passport.initialize());
 app.use(passport.session());
