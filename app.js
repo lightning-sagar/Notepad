@@ -248,7 +248,7 @@ app.post('/signup', async (req, res) => {
 
     const registeredUser = await User.register(newUser, password);
 
-    await sendWelcomeEmail(email);
+    await sendEmail(email);
 
     req.login(registeredUser, (err) => {
       if (err) {
