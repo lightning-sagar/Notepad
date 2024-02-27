@@ -136,15 +136,24 @@ app.get('/signup', (req, res) => {
 
 cron.schedule('* * * * *', async () => {
   try {
+    // console.log('Cron job running...');
 
-    const currentDate = new Date();
+    const currentDate = moment(); 
+    const currentDateTime = new Date();  
+
+    console.log('Current Date:', currentDateTime); 
     const upcomingTodos = await Todo.find({
       dateTime: {
-        $gte: currentDate,
-        $lte: new Date(currentDate.getTime() + 24 * 60 * 60 * 1000)
+        $gte: currentDateTime,
+        $lte: new Date(currentDateTime.getTime() + 24 * 60 * 60 * 1000)
       },
       emailSent: { $ne: true }
     });
+    
+    console.log('Upcoming Todos:', upcomingTodos);
+    // console.log('Upcoming Todos:', upcomingTodos.map(todo => ({ 
+    //   ...todo, dateTime: todo.dateTime.toISOString().slice(0, -5) 
+    // })));
 
     if (upcomingTodos.length === 0) {
       console.log('No upcoming todos found.');
@@ -165,11 +174,12 @@ cron.schedule('* * * * *', async () => {
         const twelveHours = 12 * 60 * 60 * 1000;
         const oneDay = 24 * 60 * 60 * 1000;
 
-        const timeDifference = moment(todo.DateTime).diff(currentDate, 'milliseconds');
+        const timeDifference = moment(todo.dateTime).diff(currentDateTime, 'milliseconds');
+        console.log(moment(todo.dateTime) , 'Difference:', moment(todo.dateTime).diff(currentDateTime, 'milliseconds'))
+        console.log('Current Date:', currentDateTime);
+        console.log('DateTime:', todo.dateTime);
+        console.log('Time Difference:', timeDifference);
 
-        console.log('Current Date:', currentDate);
-        console.log(timeDifference,"timeDifference\n");
-        console.log(todo,"\n")
         if (timeDifference <= oneMinute && timeDifference >= -oneMinute) {
           await sendEmail(todo, `Reminder for todo: ${todo.title}`);
         } else if (timeDifference <= oneHour && timeDifference >= oneHour - 2 * oneMinute) {
@@ -181,7 +191,7 @@ cron.schedule('* * * * *', async () => {
         } else if (timeDifference >= oneDay - 2 * oneMinute && timeDifference <= oneDay) {
           await sendEmail(todo, `Reminder for todo: ${todo.title} 1 day left to complete`);
         } else {
-          console.log('Time abhi sahi nahi hua. Skipping email for todo:', note._id);
+          console.log('Time abhi sahi nahi hua. Skipping email for todo:', todo._id);
         }
 
         todo.emailSent = true;
@@ -214,7 +224,7 @@ async function sendEmail(todo, subject) {
       from: process.env.EMAIL,
       to: user.email,
       subject: 'Notepad - Reminder',
-      text: `Reminder for todo: ${todo.text}... please update it if you have not done it.\n link: http://localhost:3000/user/${todo.user}`,
+      text: `Reminder for todo ${subject}: ${todo.text}... please update it if you have not done it.\n link: ` ,
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -414,9 +424,8 @@ app.post('/todoadd', async (req, res) => {
   try {
     const { text, dateTime } = req.body;
 
-    const noteId = req.session.noteId;  
-    console.log(noteId, "nodeId");
-    console.log("NoteId:", noteId);
+    const noteId = req.session.noteId;
+    console.log(req.user)
     const newTodo = new Todo({ text, user: req.user._id, note: noteId, dateTime });
 
     await newTodo.save();
@@ -628,5 +637,8 @@ app.get('/auth/google/failure', (req, res) => {
 
 const PORT = 3000;
 app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
