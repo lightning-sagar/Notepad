@@ -166,37 +166,33 @@ cron.schedule('* * * * *', async () => {
       }
 
       if (!todo.completed) {
-        const timeDifference = todo.dateTime - currentDate;
-        
-        console.log('Todo Deadline:', todo.dateTime.toISOString().slice(0, -5));
-        console.log('Time Difference:', timeDifference);
-
         const oneMinute = 60 * 1000;
         const oneHour = 60 * 60 * 1000;
         const SixHours = 6 * 60 * 60 * 1000;
-        const tweleveHours = 12 * 60 * 60 * 1000;
+        const twelveHours = 12 * 60 * 60 * 1000;
         const oneDay = 24 * 60 * 60 * 1000;
 
-        // console.log('oneHour - 2*oneMinute:',oneHour - 2 * oneMinute,'timeDifference:', timeDifference,' oneHour ', oneHour);
+        const timeDifference = moment(todo.DateTime).diff(currentDate, 'milliseconds');
+
+        console.log('Current Date:', currentDate);
 
         if (timeDifference <= oneMinute && timeDifference >= -oneMinute) {
-          await sendEmail(todo, `Reminder for todo: ${todo.text}`);
+          await sendEmail(todo, `Reminder for todo: ${todo.title}`);
         } else if (timeDifference <= oneHour && timeDifference >= oneHour - 2 * oneMinute) {
-          await sendEmail(todo, `Reminder for todo: ${todo.text} 1 hr left to complete`);
-        }
-        else if (timeDifference >= SixHours - 2 * oneMinute && timeDifference <= SixHours) {
-          await sendEmail(todo, `Reminder for todo: ${todo.text} 6 hrs left to complete`);
-        } else if (timeDifference >= tweleveHours - 2 * oneMinute && timeDifference <= tweleveHours) {
-          await sendEmail(todo, `Reminder for todo: ${todo.text} 12 hrs left to complete`);
+          await sendEmail(todo, `Reminder for todo: ${todo.title} 1 hr left to complete`);
+        } else if (timeDifference >= SixHours - 2 * oneMinute && timeDifference <= SixHours) {
+          await sendEmail(todo, `Reminder for todo: ${todo.title} 6 hrs left to complete`);
+        } else if (timeDifference >= twelveHours - 2 * oneMinute && timeDifference <= twelveHours) {
+          await sendEmail(todo, `Reminder for todo: ${todo.title} 12 hrs left to complete`);
         } else if (timeDifference >= oneDay - 2 * oneMinute && timeDifference <= oneDay) {
-          await sendEmail(todo, `Reminder for todo: ${todo.text} 1 day left to complete`);
-        } 
-      } else {
-        console.log('Todo is marked as completed. Skipping email for todo:', todo._id);
-      }
+          await sendEmail(todo, `Reminder for todo: ${todo.title} 1 day left to complete`);
+        } else {
+          console.log('Time abhi sahi nahi hua. Skipping email for todo:', note._id);
+        }
 
-      todo.emailSent = true;
-      await todo.save();
+        todo.emailSent = true;
+        await todo.save();
+      }
     }
   } catch (error) {
     console.error('Error in cron job:', error);
