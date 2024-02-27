@@ -136,11 +136,8 @@ app.get('/signup', (req, res) => {
 
 cron.schedule('* * * * *', async () => {
   try {
-    // console.log('Cron job running...');
 
     const currentDate = new Date();
-    // console.log('Current Date/Time:', currentDate.toISOString().slice(0, -5));
-
     const upcomingTodos = await Todo.find({
       dateTime: {
         $gte: currentDate,
@@ -148,10 +145,6 @@ cron.schedule('* * * * *', async () => {
       },
       emailSent: { $ne: true }
     });
-
-    // console.log('Upcoming Todos:', upcomingTodos.map(todo => ({ 
-    //   ...todo, dateTime: todo.dateTime.toISOString().slice(0, -5) 
-    // })));
 
     if (upcomingTodos.length === 0) {
       console.log('No upcoming todos found.');
@@ -175,7 +168,8 @@ cron.schedule('* * * * *', async () => {
         const timeDifference = moment(todo.DateTime).diff(currentDate, 'milliseconds');
 
         console.log('Current Date:', currentDate);
-
+        console.log(timeDifference,"timeDifference\n");
+        console.log(todo,"\n")
         if (timeDifference <= oneMinute && timeDifference >= -oneMinute) {
           await sendEmail(todo, `Reminder for todo: ${todo.title}`);
         } else if (timeDifference <= oneHour && timeDifference >= oneHour - 2 * oneMinute) {
