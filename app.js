@@ -86,7 +86,7 @@ store.on('error', function (e) {
 
 app.use(
   session({
-    store,
+    store: store,
     secret: process.env.SECRET,
     resave: true,
     saveUninitialized: true,
