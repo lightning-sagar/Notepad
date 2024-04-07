@@ -6,16 +6,18 @@ const noteSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  StartTime: Date,
+  EndTime: Date,
   title: {
     type: String,
+  },
+  completed: {
+    type:Boolean,
+    default: false
   },
   note: {
     type: String,
   },
-  todos: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Todo' // Reference to the Todo model
-  }],
 });
 
 const Note = mongoose.model('Note', noteSchema);

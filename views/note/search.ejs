@@ -1,0 +1,353 @@
+<% layout('/layout/boilerplate.ejs') %>
+
+<style>
+  .title {
+    text-align: center;
+  }
+  body {
+    background-color: rgb(28, 27, 27)!important;
+    color: white;
+  }
+
+  .card {
+    background-color: rgb(100, 97, 97)!important;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+  }
+
+  .card:hover {
+    transform: scale(1.05);
+  }
+  .card-body{
+    flex: 0 1 auto !important;
+  }
+
+  .edit-icon {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #333;
+    cursor: pointer;
+    font-size: 20px;
+  }
+
+  .card:hover .edit-icon {
+    display: inline-block;
+  }
+
+  .iconssad:hover {
+    color: #7142fe;
+  }
+
+  .news {
+    text-align: center;
+  }
+
+  .add-note-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-size: 25px;
+    background-color: #3498db;
+    color: #fff;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s;
+    display: none;
+  }
+
+  .add-note-icon:hover {
+    background-color: #2980b9;
+  }
+
+  @media (max-width: 767px) {
+    .add-note-icon {
+      display: block;
+    }
+    .tcentre{
+      display: none !important;
+    }
+    .card-description{
+      margin-left: 0!important;
+      text-align: center;
+    }
+  }
+  .card-description{
+    margin-left: 30px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    max-height: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-title{
+    margin-top: 20px;
+  }
+  .tcentre{
+    font-size: 100px;
+    cursor: pointer;
+    text-align: center;
+    justify-content: center;
+    height: 250px !important;
+  }
+
+  .heightcard{
+    height: 240px !important  ;
+  }
+  .card-text{
+    text-align: center;
+    color: rgb(77, 188, 236);
+    text-decoration: underline;
+  }
+  
+  .editbtn {
+    background-color: #3498db;
+    color: #fff;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: 46px;
+    margin-top: 91px;
+  }
+  
+  .editbtn:hover {
+    background-color: #2980b9;
+  }
+
+  .deletebtn{
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: 115px;
+    margin-top: -64px;
+    background-color: red;
+  }
+
+  .form-check-input[type=checkbox] {
+    border-radius: 5.25em;
+    height: 28px;
+    width: 26px;
+  }
+  .inputcheck {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 20px;  
+    height: 20px;  
+    border-radius: 80%;  
+    border: 2px solid #3498db;  
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+    margin-left: 204px;
+    margin-top: -64px;
+  }
+  
+  .inputcheck:checked {
+    background-color: #3498db;  
+    border-color: #3498db;  
+  }
+
+  .completebtn{
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: 215px;
+    margin-top: -111px;
+    background: #3498db;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #333;
+    cursor: pointer;
+    font-size: 20px;
+    z-index: 10000;
+  }
+  
+</style>  
+
+<% if (allNotes.length !== 0) { %>
+  <div class="container mt-4">
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-1 g-4">
+      <% allNotes.forEach((note) => { %>
+        <% if(!note.completed && title === "All Notes") { 
+        %>
+        <div class="col">
+          <div class="card h-100 heightcard">
+            <div class="card-body">
+              <h5 class="card-title title"><%= note.title %></h5>
+              <i class="edit-icon fas fa-edit" onclick="toggleEditDiv(event)"></i>
+            </div>
+            <div class="card-description"><%= note.note %></div>
+            <div class="text-decoration-none custom-bg   ">
+              <button class=" editbtn" data-note-id="<%= note._id %>">Edit</button>
+            </div>
+            <form action="/user/note/<%= note._id %>?_method=DELETE" method="POST">
+              <button class="btn btn-danger deletebtn">Delete</button>
+            </form>
+            <form action="/user/note/<%= note._id %>/completed" method="POST">
+              <button class="btn btn-success completebtn">Complete</button>
+            </form>
+            <div class="edit-div" style="display: none;">
+              Edit content for note <%= note._id %>
+            </div>
+          </div>
+        </div>
+      <% } else if(title){%>
+        <div class="col">
+          <div class="card h-100 heightcard">
+            <div class="card-body">
+              <h5 class="card-title title"><%= note.title %></h5>
+              <i class="edit-icon fas fa-edit" onclick="toggleEditDiv(event)"></i>
+            </div>
+            <div class="card-description"><%= note.note %></div>
+            <div class="text-decoration-none custom-bg   ">
+              <button class=" editbtn" data-note-id="<%= note._id %>">Edit</button>
+            </div>
+            <form action="/user/note/<%= note._id %>?_method=DELETE" method="POST">
+              <button class="btn btn-danger deletebtn">Delete</button>
+            </form>
+            <form action="/user/note/<%= note._id %>/completed" method="POST">
+              <button class="btn btn-success completebtn"><% if (note.completed) { %>completed <span class="material-symbols-outlined">
+                done
+                </span><% } else { %>Complete<% } %></button>
+            </form>
+            <div class="edit-div" style="display: none;">
+              Edit content for note <%= note._id %>
+            </div>
+          </div>
+        </div>
+      <%}}) %>
+      <div class="card h-100 tcentre"><p class="plusheight" style="color: #2980b9+;">+</p></div>
+    </div>
+  </div>
+<% } else if(title === "No matches found") { %>
+  <div class="col">
+    <div class="card h-100 heightcard">
+      <div class="card-body">
+        No Result Found
+      </div>
+      <div class="card h-100 tcentre"><p class="plusheight" style="color: #2980b9+;">+</p></div>
+<%}else { %>
+  <div class="container mt-4">
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-1 g-4">
+      <div class="col">
+        <div class="news mt-3">
+          <h5 class="card-title">No Notes Found</h5>
+          <div class="card h-100 tcentre"><p class="plusheight" style="color: #2980b9+;">+</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% } %>
+
+<div class="add-note-icon">+</div>
+ 
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const editButtons = document.querySelectorAll('.editbtn');
+
+    editButtons.forEach(button => {
+      button.addEventListener('click', async () => {
+        const noteId = button.dataset.noteId;
+        try {
+          const response = await fetch(`/user/note/${noteId}`);
+          const showPageContent = await response.text();
+          const showPageContainer = document.createElement('div');
+          showPageContainer.innerHTML = showPageContent;
+          showPageContainer.classList.add('show-page-container');
+          document.body.appendChild(showPageContainer);
+          showPageContainer.style.height = '100vh';
+          showPageContainer.style.left = '50%';
+          showPageContainer.style.transform = 'translateX(-50%)';
+          showPageContainer.style.position = 'fixed';
+          showPageContainer.style.overflow = 'hidden';
+          showPageContainer.style.top = '0';
+          showPageContainer.style.zIndex = '9999';
+          showPageContainer.style.width = '80%';
+          showPageContainer.style.overflowY = 'auto'; 
+          document.querySelector('.container').style.filter = 'blur(5px)';
+          document.querySelector('nav').style.filter = 'blur(5px)';
+          const crossButton = document.createElement('button');
+          crossButton.innerHTML = '✖️';
+          crossButton.classList.add('close-btn');
+          showPageContainer.appendChild(crossButton);
+          
+          crossButton.addEventListener('click', () => {
+            document.body.removeChild(showPageContainer);
+            document.querySelector('.container').style.filter = 'none';
+          document.querySelector('nav').style.filter = 'none';
+          });
+        } catch (error) {
+          console.error('Error fetching show page content:', error);
+        }
+      });
+    });
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+<script>
+  function toggleEditDiv(event) {
+    const card = event.target.closest('.card');
+    const editDiv = card.querySelector('.edit-div');
+    editDiv.style.display = editDiv.style.display === 'none' ? 'block' : 'none';
+  }
+  const options = {
+    bottom: '64px',
+    right: 'unset',
+    left: '32px',
+    time: '0.5s',
+    mixColor: '#fff',
+    backgroundColor: '#fff',
+    buttonColorDark: '#100f2c',
+    buttonColorLight: '#fff',
+    saveInCookies: false,
+    label: '🌓',
+    autoMatchOsTheme: true
+  }
+
+  const darkmode = new Darkmode(options);
+  
+  // Toggle dark mode on a button click, for example
+  const toggleButton = document.getElementById('toggle-dark-mode');
+  toggleButton.addEventListener('click', () => {
+    darkmode.toggle();
+  });
+
+  // Add the Darkmode.js widget
+  darkmode.showWidget();
+  
+  // Initial toggle (optional)
+  darkmode.toggle();
+  
+  console.log(darkmode.isActivated()); // true
+</script>
+<script>
+  const addNoteIcon = document.querySelector('.add-note-icon');
+  const tcentre = document.querySelector('.tcentre');
+  document.addEventListener('DOMContentLoaded', () => {
+
+    tcentre.addEventListener('click', () => {
+      window.location.href = '/user/${req.user._id}/new';
+    })
+    addNoteIcon.addEventListener('click', () => {
+      window.location.href = '/user/${req.user._id}/new';
+    })
+  })
+</script>

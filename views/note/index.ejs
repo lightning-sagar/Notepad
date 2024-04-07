@@ -1,6 +1,92 @@
 <% layout('/layout/boilerplate.ejs') %>
 
 <style>
+  .custom-editbtn{
+    background: green !important;
+    border: none !important;
+    border-radius: 12px;
+    padding: 5px 10px;
+    color: white;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  .custom-editbtn:hover{
+    background: rgb(0, 255, 0) !important;
+    border: none !important;
+    border-radius: 12px;
+    padding: 5px 10px;
+    color: white;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+
+  .todays-goals {
+    margin: 20px 0;
+    font-size: 24px;
+    color: #3498db; /* Use a blue color */
+  }
+
+  /* Style the slider */
+  .slider {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none; /* Hide scrollbar */
+    -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+  }
+  .slider::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+  }
+  .slide {
+    flex: 0 0 auto;
+    margin-right: 20px;
+    padding: 10px;
+    background-color: #2c3e50; /* Use a dark background color */
+    color: white;
+    border-radius: 10px;
+    width: 200px; /* Adjust width as needed */
+  }
+
+  .recently-created {
+    margin: 20px 110px;
+    font-size: 24px;
+    color: #e74c3c; /* Use a red color */
+  }
+
+  /* Style the cards */
+  .card {
+    background-color: #34495e; /* Use a dark background color */
+    color: white;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    transition: transform 0.3s;
+  }
+  .card:hover {
+    transform: translateY(-5px); /* Lift the card on hover */
+  }
+  .card-title {
+    margin-top: 20px;
+    color: #3498db; /* Use a blue color for the title */
+  }
+  .card-body {
+    padding: 20px;
+  }
+
+  /* Style the buttons */
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  .btn-danger {
+    background-color: #e74c3c; /* Use a red color for delete button */
+    color: white;
+  }
+  .btn-success {
+    background-color: #27ae60; /* Use a green color for complete button */
+    color: white;
+  }
   .title {
     text-align: center;
   }
@@ -71,15 +157,14 @@
     .add-note-icon {
       display: block;
     }
-    .tcentre{
-      display: none !important;
-    }
+    
     .card-description{
       margin-left: 0!important;
       text-align: center;
     }
   }
   .card-description{
+    color: white;
     margin-left: 30px;
     margin-top: 10px;
     margin-bottom: 20px;
@@ -89,13 +174,6 @@
   }
   .card-title{
     margin-top: 20px;
-  }
-  .tcentre{
-    font-size: 100px;
-    cursor: pointer;
-    text-align: center;
-    justify-content: center;
-    height: 250px !important;
   }
 
   .heightcard{
@@ -107,42 +185,293 @@
     text-decoration: underline;
   }
   
+  .editbtn {
+    background-color: #3498db;
+    color: #fff;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: 46px;
+    margin-top: 91px;
+  }
+  
+  .editbtn:hover {
+    background-color: #2980b9;
+  }
+
+  .deletebtn{
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: 115px;
+    margin-top: -64px;
+    background-color: red;
+  }
+
+  .form-check-input[type=checkbox] {
+    border-radius: 5.25em;
+    height: 28px;
+    width: 26px;
+  }
+  .inputcheck {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 20px;  
+    height: 20px;  
+    border-radius: 80%;  
+    border: 2px solid #3498db;  
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+    margin-left: 204px;
+    margin-top: -64px;
+  }
+  
+  .inputcheck:checked {
+    background-color: #3498db;  
+    border-color: #3498db;  
+  }
+
+  .completebtn{
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: 215px;
+    margin-top: -111px;
+    background: #3498db;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #333;
+    cursor: pointer;
+    font-size: 20px;
+    z-index: 10000;
+  }
+  .button-container {
+    display: flex;
+    gap: 10px; 
+  }
+  
+  .ccompletebtn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: -50px;
+    background: blue!important;
+  }
+  .centerplus{
+    text-align: center;
+    justify-items: center;
+    font-size: 2rem;
+    align-items: center;
+    margin-top: 20px;
+  }
+  .centerplus:hover{
+    cursor: pointer;
+  }
+  .color-green{
+    color: green;
+  }
 </style>  
 
-<!-- Inside your EJS template -->
-<% if (allNotes.length !== 0) { %>
-  <div class="container mt-4 ">
-    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-1 g-4">
-      <% allNotes.forEach((note) => { %>
-        <a href="/user/note/<%= note._id %>" class="text-decoration-none custom-bg">
-          <div class="col">
-            <div class="card h-100 heightcard" style="background-color: <%= colors %>;">
+<% const today = new Date(); %>
 
-              <div class="card-body">
-                <h5 class="card-title title"><%= note.title %></h5>
-                <!-- Edit icon -->
-                <i class="edit-icon fas fa-edit"></i>
-              </div>
-              <div class="card-description"><%= note.note %></div>
-              <p class="card-text">Read More....</p>
-            </div>
+<% const filteredNotes = allNotes.filter(note => {
+  const noteDate = new Date(note.StartTime);
+  return noteDate.getFullYear() === today.getFullYear() &&
+         noteDate.getMonth() === today.getMonth() &&
+         noteDate.getDate() === today.getDate();
+});
+
+allNotes.sort((a, b) => new Date(a.StartTime) - new Date(b.StartTime));
+
+%>
+
+<% if (filteredNotes.length !== 0) { %>
+  <div class="todays-goals">Today's Goals</div>
+  <div class="container mt-4">
+    <div class="slider">
+      <% filteredNotes.forEach((note) => {
+        if(!note.completed){
+        %>
+        <div class="slide">
+          <h5 style="text-align: center"><%= note.title %></h5>
+          <div class="button-container">
+            <button class="custom-editbtn" data-note-id="<%= note._id %>">Edit</button>
+            <form action="/user/note/<%= note._id %>/completed" method="POST">
+              <button class="btn btn-success ccompletebtn">Complete</button>
+            </form>
           </div>
-        </a>
-      <% }) %>
-      <div class="card h-100 tcentre"><p class="plusheight" style="color: #2980b9+;">+</p></div>
-    </div>
-  </div>
-<% } else { %>
-  <div class="col">
-    <div class="news mt-3">
-      <h5 class="card-title">No Notes Found</h5>
+        </div>
+      <% }}); %>
+      <div class="slide">
+      <p class="plusheight centerplus" id="centerplus" style="color: #2980b9+;">+</p></div>
+      </div>
     </div>
   </div>
 <% } %>
 
+<% if (allNotes.length !== 0) { %>
+  <div class="container mt-4">
+    <% let currentDate = null; %>
+    <% allNotes.forEach((note) => { %>
+      <% const noteDate = new Date(note.StartTime); %>
+      <% const noteDateString = noteDate.toLocaleDateString(undefined, { day: 'numeric', month: 'long' }); %>
+      
+      <% if (currentDate !== noteDateString) { %>
+        <% if (currentDate !== null) { %>
+          </div> 
+        <% } %>
+        <h2 class="mt-4 color-green"><%= noteDateString %></h2> 
+        <div class="row row-cols-lg-3 row-cols-md-2 row-cols-1 g-4">
+        <% currentDate = noteDateString; %>
+      <% } %>
+      
+      <div class="col">
+        <div class="card h-100 heightcard">
+          <div class="card-body">
+            <h5 class="card-title title"><%= note.title %></h5>
+            <i class="edit-icon fas fa-edit" onclick="toggleEditDiv(event)"></i>
+          </div>
+          <div class="card-description"><%= note.note %></div>
+          <div class="text-decoration-none custom-bg">
+            <button class="editbtn" data-note-id="<%= note._id %>">Edit</button>
+          </div>
+          <form action="/user/note/<%= note._id %>?_method=DELETE" method="POST">
+            <button class="btn btn-danger deletebtn">Delete</button>
+          </form>
+          <form action="/user/note/<%= note._id %>/completed" method="POST">
+            <button class="btn btn-success completebtn"><% if (note.completed) { %>completed <span class="material-symbols-outlined">done</span><% } else { %>Complete<% } %></button>
+          </form>
+          <div class="edit-div" style="display: none;">
+            Edit content for note <%= note._id %>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+    </div>  
+  </div>
+<% } else if (title === "No matches found") { %>
+  <div class="col">
+    <div class="card h-100 heightcard">
+      <div class="card-body">
+        No Result Found
+      </div>
+  </div>
+<% } else { %>
+  <div class="container mt-4">
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-1 g-4">
+      <div class="col">
+        <div class="news mt-3">
+          <h5 class="card-title">No Notes Found</h5>
+        </div>
+      </div>
+    </div>  
+  </div>
+<% } %>
+
 <div class="add-note-icon">+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const editbtn2 = document.querySelectorAll('.custom-editbtn');
+    const editButtons = document.querySelectorAll('.editbtn');
+
+    editbtn2.forEach(button => {
+      button.addEventListener('click', async () => {
+        const noteId = button.dataset.noteId;
+        try {
+          const response = await fetch(`/user/note/${noteId}`);
+          const showPageContent = await response.text();
+          const showPageContainer = document.createElement('div');
+          showPageContainer.innerHTML = showPageContent;
+          showPageContainer.classList.add('show-page-container');
+          document.body.appendChild(showPageContainer);
+          showPageContainer.style.height = '98vh';
+          showPageContainer.style.left = '50%';
+          showPageContainer.style.transform = 'translateX(-50%)';
+          showPageContainer.style.position = 'fixed';
+          showPageContainer.style.overflow = 'hidden';
+          showPageContainer.style.top = '0';
+          showPageContainer.style.zIndex = '9999';
+          showPageContainer.style.width = '85%';
+          showPageContainer.style.overflowY = 'auto'; 
+          document.querySelector('.container').style.filter = 'blur(5px)';
+          document.querySelector('nav').style.filter = 'blur(5px)';
+          const crossButton = document.createElement('button');
+          crossButton.innerHTML = '✖️';  
+          crossButton.classList.add('close-btn');
+          showPageContainer.appendChild(crossButton);
+          
+          crossButton.addEventListener('click', () => {
+            document.body.removeChild(showPageContainer);
+            document.querySelector('.container').style.filter = 'none';
+          document.querySelector('nav').style.filter = 'none';
+          });
+        } catch (error) {
+          console.error('Error fetching show page content:', error);
+        }
+      });
+    });
+
+
+    editButtons.forEach(button => {
+      button.addEventListener('click', async () => {
+        const noteId = button.dataset.noteId;
+        try {
+          const response = await fetch(`/user/note/${noteId}`);
+          const showPageContent = await response.text();
+          const showPageContainer = document.createElement('div');
+          showPageContainer.innerHTML = showPageContent;
+          showPageContainer.classList.add('show-page-container');
+          document.body.appendChild(showPageContainer);
+          showPageContainer.style.height = '98vh';
+          showPageContainer.style.left = '50%';
+          showPageContainer.style.transform = 'translateX(-50%)';
+          showPageContainer.style.position = 'fixed';
+          showPageContainer.style.overflow = 'hidden';
+          showPageContainer.style.top = '0';
+          showPageContainer.style.zIndex = '9999';
+          showPageContainer.style.width = '85%';
+          showPageContainer.style.overflowY = 'auto'; 
+          document.querySelector('.container').style.filter = 'blur(5px)';
+          document.querySelector('nav').style.filter = 'blur(5px)';
+          const crossButton = document.createElement('button');
+          crossButton.innerHTML = '✖️';  
+          crossButton.classList.add('close-btn');
+          showPageContainer.appendChild(crossButton);
+          
+          crossButton.addEventListener('click', () => {
+            document.body.removeChild(showPageContainer);
+            document.querySelector('.container').style.filter = 'none';
+          document.querySelector('nav').style.filter = 'none';
+          });
+        } catch (error) {
+          console.error('Error fetching show page content:', error);
+        }
+      });
+    });
+  });
+
+  
+</script>
 <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
 <script>
+  function toggleEditDiv(event) {
+    const card = event.target.closest('.card');
+    const editDiv = card.querySelector('.edit-div');
+    editDiv.style.display = editDiv.style.display === 'none' ? 'block' : 'none';
+  }
   // Initialize Darkmode
   const options = {
     bottom: '64px',
@@ -175,11 +504,10 @@
   console.log(darkmode.isActivated()); // true
 </script>
 <script>
+  const addbtnnote = document.querySelector('#centerplus');
   const addNoteIcon = document.querySelector('.add-note-icon');
-  const tcentre = document.querySelector('.tcentre');
   document.addEventListener('DOMContentLoaded', () => {
-
-    tcentre.addEventListener('click', () => {
+    addbtnnote.addEventListener('click', () => {
       window.location.href = '/user/${req.user._id}/new';
     })
     addNoteIcon.addEventListener('click', () => {

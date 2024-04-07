@@ -8,11 +8,10 @@ main().then(()=>{
   .catch(err => console.log(err))
   
   async function main() {
-    await mongoose.connect('mongodb://127.0.0.1:27017/Note')
+    await mongoose.connect('mongodb://127.0.0.1:27017/Todo');
 }
 
 const initDB = async () => {
-    await note.insertMany(initData.data)
     console.log("data is inserted");
 }
 

@@ -1,6 +1,63 @@
 <% layout('/layout/boilerplate.ejs') %>
 
 <style>
+.date-time-section {
+  margin-bottom: 20px;
+}
+.date-group{
+  justify-content: center;
+}
+
+.date-group,
+.time-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.date-group label,
+.time-group label {
+  margin-right: 10px;
+}
+
+.start,
+.end {
+  margin-right: 20px;
+}
+
+/* Notes Section */
+
+
+ 
+
+  .custom-input-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .date-group,
+  .time-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .date-group label,
+  .time-group label {
+    margin-right: 10px;
+  }
+  
+  .start,
+  .end {
+    margin-right: 20px;
+  }
+  
+  #noteTitle,
+  #noteContent,
+  #saveNote {
+    margin-top: 10px;
+  }
+  
   body {
     font-family: 'Arial', sans-serif;
     margin: 0;
@@ -14,15 +71,25 @@
     gap: 10px;
   }
   #notepad {
+    padding-top: 5px;
     width: 90%;
     margin: 20px auto;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
     border-radius: 8px;
-    height: 600px;
+    height: 129px;
     position: relative;
     z-index: 2; /* Ensure note stays above todo */
+  }
+  #notes-section{
+    padding-top: 5px;
+    width: 90%;
+    margin: 20px auto;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    border-radius: 8px;
   }
 
   input#noteTitle {
@@ -188,10 +255,13 @@
   }
 
   .custom-input-group {
+      height: 115px;
+      margin-top: 15px;
       margin-bottom: 15px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      
   }
 
   .custom-todotext {
@@ -286,7 +356,6 @@
   }
   .custom-time-date-group{
     margin-right: 20px;
-    display: none;
   }
   .custom-time-btn{
     margin-left: 20px;
@@ -296,114 +365,183 @@
     background: #575656!important;
     color: #fff;
   }
+  .custom-existing-notes {
+    position: relative;
+  }
+
+  .blur-background {
+    filter: blur(5px); /* Adjust the blur intensity as needed */
+    pointer-events: none; /* Prevent interaction with blurred elements */
+  }
+
+  #existingNotes {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* Add a shadow for better visibility */
+    z-index: 1000; /* Ensure it's above other content */
+  }
+
+  .text-align-existing {
+    text-align: center;
+  }
+
+  .custom-editbtn{
+    background: green !important;
+    border: none !important;
+    border-radius: 12px;
+    padding: 5px 10px;
+    color: white;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  .custom-editbtn:hover{
+    background: rgb(0, 255, 0) !important;
+    border: none !important;
+    border-radius: 12px;
+    padding: 5px 10px;
+    color: white;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  .button-container {
+    display: flex;
+    gap: 10px; 
+  }
+  .ccompletebtn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: -50px;
+    background: blue!important;
+  }
+  .slide {
+    flex: 0 0 auto;
+    margin-right: 20px;
+    padding: 10px;
+    background-color: #2c3e50; /* Use a dark background color */
+    color: white;
+    border-radius: 10px;
+    width: 200px; 
+    margin-bottom: 20px;
+  }
+  .slider {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none; 
+    -ms-overflow-style: none;  
+  }
+  .slider::-webkit-scrollbar {
+    display: none 
+  }
+  .text-align-existing{
+    text-align: center;
+  }
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #333;
+    cursor: pointer;
+    font-size: 20px;
+    z-index: 10000;
+  }
 </style>
-
-</head>
-
 <body>
 
-<div id="notepad">
-  <form action="/user/${req.user._id}" method="POST" class="note-form form form-inline form-group">
-    <input type="text" id="noteTiztle" placeholder="Enter the title..." name="title">
-    <textarea id="noteContent" placeholder="Start typing your note..." name="note"></textarea>
-    <button id="saveNote">Save</button>
-  </form>
-</div>
-
-<div class="todo">
-  <div class="todo-name">
-    <div class="container custom-todo-container">
-      <h1 class="text-center mb-4">Todo List</h1>
-      <div class="custom-input-group mb-3">
-          <form id="todoForm" action="/todoadd" method="post" class="d-flex align-items-center">
-              <input type="text" id="todoInput" required class="form-control-lg custom-todotext" name="text" placeholder="Add a new todo" aria-label="Add a new todo" aria-describedby="addTodoBtn">
-              <span class="material-symbols-outlined custom-time-btn" style="cursor: pointer;">
-                notification_add
-                </span>
-              <div class="custom-time-date-group">
-                <input type="datetime-local" required placeholder="Add reminder" id="dateTimeInput" class="form-control-lg custom-date-time-input" name="dateTime" aria-label="Todo Date and Time">
+<% if (existingNotes && existingNotes.length > 0) { %>
+  <div class="custom-existing-notes">
+    <button class="close-btn" id="_close">✖️</button>
+    <div id="notepad" class="<%= existingNotes && existingNotes.length > 0 ? 'blur-background' : '' %>">
+      <form action="/user/${req.user._id}" method="POST" class="note-form form form-inline form-group">
+        <div class="custom-input-group mb-3">
+          <div class="date-time-section">
+            <div class="time-group">
+              <div class="start">
+                <label for="startTimeInput">Start Date and Time:</label>
+                <input type="datetime-local" required id="startTimeInput" class="form-control-lg custom-date-time-input" name="startTime" placeholder="HH:MM" aria-label="Todo Start Time">
               </div>
-              <button class="btn btn-primary custom-add-btn" type="submit" id="addTodoBtn">Add</button>
-          </form>
+              <div class="end">
+                <label for="endTimeInput">End Date and Time:</label>
+                <input type="datetime-local" required id="endTimeInput" class="form-control-lg custom-date-time-input" name="endTime" placeholder="HH:MM" aria-label="Todo End Time">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-section" id="notes-section">
+          <input type="text" id="noteTitle" placeholder="Enter the title..." name="title">
+          <textarea id="noteContent" placeholder="Start typing your note..." name="note"></textarea>
+        </div>
+        <button id="saveNote">Save</button>
+      </form>
+    </div>
+    <div id="existingNotes">
+      <h2 class="text-align-existing">Existing Notes:</h2>
+      <div class="slider">
+          <% existingNotes.forEach((note) => { %>
+            <div class="slide">
+              <h5 style="text-align: center"><%= note.title %></h5>
+              <div class="button-container">
+                <button class="custom-editbtn" data-note-id="<%= note._id %>">Edit</button>
+                <form action="/user/note/<%= note._id %>/completed" method="POST">
+                  <button class="btn btn-success ccompletebtn">Complete</button>
+                </form>
+              </div>
+            </div>
+          <% }); %>
       </div>
-      <ul class="list-group" id="todoList">
-        <% if (allTodos && Array.isArray(allTodos) && allTodos.length > 0) { %>
-          <% allTodos.forEach(todo => { %>
-            
-              <li class="list-group-item custom-list-item">
-
-                  <% const timeDifference = new Date(todo.dateTime) - new Date(); %>
-                  <% const hoursLeft = Math.floor(timeDifference / (60 * 60 * 1000)); %>
-                  <% const minutesLeft = Math.floor((timeDifference % (60 * 60 * 1000)) / (60 * 1000)); %>
-                    <% if (todo.completed) { %>
-                      <p class="custom-completed">Completed</p>
-                    <% }else { %>
-                      <p class="custom-not-completed">Not Completed</p>
-                    <% } %>
-                  </label>
-                  <div class="todo-item">
-                    <div class="todotext"><%= todo.text %></div>
-                    <div class="button-group">
-                        <form action="/user/<%= currentUser._id %>/todos/<%= todo._id %>/edit" method="GET">
-                            <button class="custom-edit-all-btn" type="submit">Edit</button>
-                        </form>
-                
-                        <form action="/user/<%= currentUser._id %>/todos/<%= todo._id %>?_method=DELETE" method="POST">
-                            <input type="hidden" name="_method" value="DELETE">
-                            <div class="custom-cross-logo" onclick="confirm('Are you sure you want to delete this todo?') && this.parentElement.submit()">
-                                &#10006;
-                            </div>
-                        </form>
-                    </div>
+    </div>
+  </div>
+    <% }else{ %>
+      <div id="notepad">
+        <form action="/user/${req.user._id}" method="POST" class="note-form form form-inline form-group">
+          <div class="custom-input-group mb-3">
+            <div class="date-time-section">
+              <div class="time-group">
+                <div class="start">
+                  <label for="startTimeInput">Start Date and Time:</label>
+                  <input type="datetime-local" required id="startTimeInput" class="form-control-lg custom-date-time-input" name="startTime" placeholder="HH:MM" aria-label="Todo Start Time">
                 </div>
-                <% if (todo.dateTime) { %>
-                  <p class="custom-time-left">
-                    <% if (hoursLeft >= 24) { %>
-                      <% const daysLeft = Math.floor(hoursLeft / 24); %>
-                      <% const remainingHours = hoursLeft % 24; %>
-                      <% if (daysLeft === 1) { %>
-                        <p class="custom-time-left" style="color: rgb(255, 255, 255);"> Time left: 1 day <%= remainingHours > 0 ? `and ${remainingHours} hours` : '' %></p>
-                      <% } else { %>
-                        <p class="custom-time-left" style="color: rgb(255, 255, 255);"> Time left: <%= daysLeft %> days <%= remainingHours > 0 ? `and ${remainingHours} hours` : '' %></p>
-                      <% } %>
-                    <% } else if (hoursLeft > 1) { %>
-                      <% const remainingMinutes = minutesLeft % 60; %>
-                      <% if (hoursLeft === 1) { %>
-                        <p class="custom-time-left" style="color: rgb(225, 255, 0);"> Time left: 1 hour <%= remainingMinutes > 0 ? `and ${remainingMinutes} minutes` : '' %></p>
-                      <% } else { %>
-                        <p class="custom-time-left" style="color: rgb(255, 255, 0);">Time left: <%= hoursLeft %> hours <%= remainingMinutes > 0 ? `and ${remainingMinutes} minutes` : '' %></p>
-                      <% } %>
-                    <% } else if (hoursLeft === 1) { %>
-                      <p class="custom-time-left" style="color: rgb(255, 106, 0);"> Time left: 1 hour</p>
-                    <% } else if (minutesLeft > 5) { %>
-                      <p class="custom-time-left" style="color: red;">Time left: <%= minutesLeft %> minutes</p>
-                    <% } else if (minutesLeft > 0) { %>
-                      <p class="custom-time-left" style="color: red;">Time left: Few minutes left</p> 
-                    <% } else { %>
-                      <p class="custom-time-left" style="color: red;">Time left: ended</p>
-                    <% } %>
-                  </p>
-                <% } %>
-                
-                
-              </li>
-          <% }) %>
-        <% }else{ %>
-           <p>great there is no todos</p>
-        <% } %>
-      </ul>
-  </div>
-  </div>
-</div>
-<script>
-  document.addEventListener('DOMContentLoaded', async () => {
+                <div class="end">
+                  <label for="endTimeInput">End Date and Time:</label>
+                  <input type="datetime-local" required id="endTimeInput" class="form-control-lg custom-date-time-input" name="endTime" placeholder="HH:MM" aria-label="Todo End Time">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="notes-section" id="notes-section">
+            <input type="text" id="noteTitle" placeholder="Enter the title..." name="title">
+            <textarea id="noteContent" placeholder="Start typing your note..." name="note"></textarea>
+          </div>
+          <button id="saveNote">Save</button>
+        </form>
+      </div>
+      <% } %>
+    </div>
+  </body>
+    
   
+<script>
+  
+  document.addEventListener('DOMContentLoaded', async () => {
+    
   const alarmicon = document.querySelector('.material-symbols-outlined');
   const customtimedategroup = document.querySelector('.custom-time-date-group');
   alarmicon.addEventListener('click', () => {
   
     customtimedategroup.style.display = 'block';
   })
+  })
+  const close = document.querySelector('#_close');
+  close.addEventListener('click', () => {
+    document.getElementById('notepad').classList.remove('blur-background');
+    document.getElementById('existingNotes').style.display = 'none';
+    close.style.display = 'none';
   })
     // Add an event listener for checkbox changes
   document.querySelectorAll('.custom-check-input').forEach(checkbox => {
@@ -445,7 +583,7 @@
             body: JSON.stringify({ completed: isChecked }),
           });
           
-          // After updating the completion status, dynamically update the time left
+
           updateRemainingTime(todoId);
         } catch (error) {
           console.error('Error updating todo completion status:', error);
@@ -507,4 +645,4 @@
         return 'Time left: ended';
       }
     }
-  </script>
+</script>

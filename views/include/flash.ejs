@@ -1,13 +1,31 @@
 <% if ( success && success.length){ %>
-    <div class="alert alert-success alert-dismissible fade show col-6 offset-3" role="alert">
+    <div id="successAlert" class="alert alert-success alert-dismissible fade show col-6 offset-3" role="alert">
         <%= success%>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <% } %>
 
 <% if (error && error.length){ %>
-    <div class="alert alert-danger alert-dismissible fade show col-6 offset-3" role="alert">
+    <div id="errorAlert" class="alert alert-danger alert-dismissible fade show col-6 offset-3" role="alert">
         <%= error%>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <% } %>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        function hideAlert(alertId) {
+            setTimeout(function() {
+                var alertElement = document.getElementById(alertId);
+                if (alertElement) {
+                    alertElement.classList.add('hide');  
+                }
+            }, 5000); 
+        }
+
+        // Call hideAlert for each alert
+        hideAlert('successAlert');
+        hideAlert('errorAlert');
+    });
+</script>
+    

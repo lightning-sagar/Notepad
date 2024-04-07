@@ -1,0 +1,124 @@
+<% layout('/layout/boilerplate.ejs') %>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+    }
+
+    h1 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    form {
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    input[type="date"] {
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+
+    button[type="submit"] {
+        padding: 8px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background-color: #fff;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f2f2f2;
+    }
+
+    p {
+        margin-top: 20px;
+        color: #666;
+    }
+    .dcentre{
+        text-align: center;
+    }
+</style>
+
+<h1 class="dcentre">Search for Free Time</h1>
+
+<form class="dcentre" action="/user/<%= noteId %>/freetime" method="POST">
+    <label for="date">Select Date:</label>
+    <input  type="date" id="date" name="date" required>
+    <button type="submit">Search</button>
+</form>
+<% function convertUTCToIST(utcTime) {
+    const utcDate = new Date(utcTime);
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+    const istTimestamp = utcDate.getTime() + istOffset;
+    const istDate = new Date(istTimestamp);
+    return istDate.toISOString().slice(0, 10) + ' ' + istDate.toISOString().slice(11, 16);
+}
+function amtopm(time) {
+    if(time>12){
+        time=time-12;
+        return time + " PM";
+
+    }
+    else{
+        return time + " AM";
+    }
+}
+%>
+
+
+<% if (freeTimeSlots && freeTimeSlots.length > 0) { %>
+<h2>Free Time Slots (IST)</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Start Time (IST)</th>
+            <th>End Time (IST)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% for (let i = 0; i < freeTimeSlots.length; i++) { %>
+            <tr>    
+                <td><%= convertUTCToIST(freeTimeSlots[i].startTime).slice(11, 16) %></td>
+                <td><%= convertUTCToIST(freeTimeSlots[i].endTime).slice(11, 16) %></td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+<% } else { %>
+<p>No Free Time Slots Found for that date</p>
+<% } %>

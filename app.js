@@ -10,13 +10,12 @@ const User = require('./models/user.js');
 const flash = require('connect-flash');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
-const Todo = require('./models/todo');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 let lastEmailSentTimestamp = null;
 const Darkmode = require('darkmode-js');
-
+const notifier = require('node-notifier');
 
 const app = express();
 const cron = require('node-cron');
@@ -54,7 +53,7 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, '/public')));
 app.set('views', path.join(__dirname, 'views'));
 
-console.log(process.env.ATLAS_DB);
+// console.log(process.env.ATLAS_DB);
 
 
 
@@ -64,7 +63,7 @@ console.log(process.env.ATLAS_DB);
 
 
 async function main() {
-  await mongoose.connect(process.env.ATLAS_DB);
+  await mongoose.connect('mongodb://127.0.0.1:27017/Todo');
   console.log('Connected to DB');
 }
 
@@ -72,21 +71,21 @@ main().catch((err) =>
   console.log(err)
 );
 
-const store = MongoStore.create({
-  mongoUrl: process.env.ATLAS_DB,
-  touchAfter: 24 * 60 * 60,
-  crypto: {
-    secret: process.env.SECRET
-  }
-})
+// const store = MongoStore.create({
+//   mongoUrl: process.env.ATLAS_DB,
+//   touchAfter: 24 * 60 * 60,
+//   crypto: {
+//     secret: process.env.SECRET
+//   }
+// })
 
-store.on('error', function (e) {
-  console.log('session store error', e)
-})
+// store.on('error', function (e) {
+//   console.log('session store error', e)
+// })
 
 app.use(
   session({
-    store,
+    // store,
     secret: process.env.SECRET,
     resave: true,
     saveUninitialized: true,
@@ -136,82 +135,64 @@ app.get('/signup', (req, res) => {
 
 cron.schedule('* * * * *', async () => {
   try {
-    // console.log('Cron job running...');
+    const currentDateTime = new Date();
+    console.log('Current Date and Time:', currentDateTime);
 
-    const currentDate = new Date();
-    // console.log('Current Date/Time:', currentDate.toISOString().slice(0, -5));
-
-    const upcomingTodos = await Todo.find({
-      dateTime: {
-        $gte: currentDate,
-        $lte: new Date(currentDate.getTime() + 24 * 60 * 60 * 1000)
+    const upcomingTodos = await Note.find({
+      StartTime: {
+        $gte: new Date(currentDateTime.getTime() - 5 * 60 * 1000), // 5 minutes before StartTime
+        $lte: new Date(currentDateTime.getTime() + 24 * 60 * 60 * 1000) // 24 hours after StartTime
       },
       emailSent: { $ne: true }
     });
 
-    // console.log('Upcoming Todos:', upcomingTodos.map(todo => ({ 
-    //   ...todo, dateTime: todo.dateTime.toISOString().slice(0, -5) 
-    // })));
+    console.log('Upcoming Todos:', upcomingTodos);
 
     if (upcomingTodos.length === 0) {
       console.log('No upcoming todos found.');
     }
 
-    for (const todo of upcomingTodos) {
-      // console.log('Sending email for todo:', todo._id);
+    for (const note of upcomingTodos) {
+      if (!note.completed) {
+        const timeDifferenceStart = moment(note.StartTime).diff(currentDateTime, 'milliseconds');
+        const timeDifferenceEnd = moment(note.EndTime).diff(currentDateTime, 'milliseconds');
 
-      if (todo.emailSent) {
-        console.log('Email already sent for this todo:', todo._id);
-        continue; 
-      }
+        console.log('Current Date:', currentDateTime);
+        console.log('Todo StartTime:', note.StartTime);
+        console.log('Todo EndTime:', note.EndTime);
 
-      if (!todo.completed) {
-        const timeDifference = todo.dateTime - currentDate;
-        
-        console.log('Todo Deadline:', todo.dateTime.toISOString().slice(0, -5));
-        console.log('Time Difference:', timeDifference);
-
-        const oneMinute = 60 * 1000;
-        const oneHour = 60 * 60 * 1000;
-        const SixHours = 6 * 60 * 60 * 1000;
-        const tweleveHours = 12 * 60 * 60 * 1000;
-        const oneDay = 24 * 60 * 60 * 1000;
-
-        // console.log('oneHour - 2*oneMinute:',oneHour - 2 * oneMinute,'timeDifference:', timeDifference,' oneHour ', oneHour);
-
-        if (timeDifference <= oneMinute && timeDifference >= -oneMinute) {
-          await sendEmail(todo, `Reminder for todo: ${todo.text}`);
-        } else if (timeDifference <= oneHour && timeDifference >= oneHour - 2 * oneMinute) {
-          await sendEmail(todo, `Reminder for todo: ${todo.text} 1 hr left to complete`);
+        if (timeDifferenceStart <= 5 * 60 * 1000 && timeDifferenceStart >= 0) {  
+          await sendEmail(note, `Reminder for todo: ${note.title} - 5 minutes before StartTime`);
+          await notification(`Reminder for todo: ${note.title} - 5 minutes before StartTime`);
+          note.emailSent = true;
         }
-        else if (timeDifference >= SixHours - 2 * oneMinute && timeDifference <= SixHours) {
-          await sendEmail(todo, `Reminder for todo: ${todo.text} 6 hrs left to complete`);
-        } else if (timeDifference >= tweleveHours - 2 * oneMinute && timeDifference <= tweleveHours) {
-          await sendEmail(todo, `Reminder for todo: ${todo.text} 12 hrs left to complete`);
-        } else if (timeDifference >= oneDay - 2 * oneMinute && timeDifference <= oneDay) {
-          await sendEmail(todo, `Reminder for todo: ${todo.text} 1 day left to complete`);
-        } 
-      } else {
-        console.log('Todo is marked as completed. Skipping email for todo:', todo._id);
-      }
+        if (timeDifferenceEnd <= 5 * 60 * 1000 && timeDifferenceEnd >= 0) {  
+          await sendEmail(note, `Reminder for todo: ${note.title} - 5 minutes before EndTime`);
+          note.emailSent = true;
+        }
 
-      todo.emailSent = true;
-      await todo.save();
+        await note.save();
+      }
     }
   } catch (error) {
     console.error('Error in cron job:', error);
   }
 });
 
+async function notification(subject) {
+  notifier.notify({
+    title: 'Notification',
+    message: subject
+  });
+}
 
-async function sendEmail(todo, subject) {
+async function sendEmail(note, subject) {
   try {
-    const user = await User.findById(todo.user);
+    const user = await User.findById(note.user);
     if (!user || !user.email) {
-      console.error('Error: User or email not found for todo:', todo);
+      console.error('Error: User or email not found for todo:', note);
       return;
     }
-
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -223,21 +204,16 @@ async function sendEmail(todo, subject) {
     const mailOptions = {
       from: process.env.EMAIL,
       to: user.email,
-      subject: 'Notepad - Reminder',
-      text: `Reminder for todo: ${todo.text}... please update it if you have not done it.\n link: http://localhost:3000/user/${todo.user}`,
+      subject: `Notepad - Reminder : ${subject}`,
+      text: `Reminder for todo: ${note.title}... `,
     };
-
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent:', info.response);
-
-    todo.emailSent = true;
-    await todo.save();
-    console.log('Mail marked as sent:', todo);
+    console.log('Mail marked as sent:', note);
   } catch (error) {
     console.error('Error sending email:', error);
   }
 }
-
 
 
 app.post('/signup', async (req, res) => {
@@ -248,7 +224,7 @@ app.post('/signup', async (req, res) => {
 
     const registeredUser = await User.register(newUser, password);
 
-    await sendWelcomeEmail(email);
+    await sendEmail(email);
 
     req.login(registeredUser, (err) => {
       if (err) {
@@ -267,15 +243,44 @@ app.post('/signup', async (req, res) => {
   }
 });
 
+
 app.post('/user/:id', ensureAuthenticated, async (req, res) => {
   try {
-    const { title, note } = req.body;
+    console.log(req.body);
+    const { startTime, endTime, title, note } = req.body;
+    const StartTime = new Date(startTime); 
+    const EndTime = new Date(endTime); 
+    const currentTime = moment();
+    const isStartTimeValid = moment(StartTime).isAfter(currentTime);
+    const isEndTimeValid = moment(EndTime).isAfter(currentTime);
+    if (!isStartTimeValid || !isEndTimeValid) {
+      req.flash('error', 'Invalid time. Please select a valid time.');
+      return res.redirect(`/user/${req.user._id}/new`);
+    }
+    let existingNotes = await Note.find({
+      user: req.user._id,
+      $or: [
+        { $and: [{ StartTime: { $lte: StartTime } }, { EndTime: { $gte: StartTime } }] }, // New note starts within existing note
+        { $and: [{ StartTime: { $lte: EndTime } }, { EndTime: { $gte: EndTime } }] },     // New note ends within existing note
+        { $and: [{ StartTime: { $gte: StartTime } }, { EndTime: { $lte: EndTime } }] }    // New note completely overlaps with existing note
+      ]
+    });
+    console.log(existingNotes,"already exit the same time??");
+    if (existingNotes.length > 0) {
+      for(let i = 0; i < existingNotes.length; i++) {
+          req.flash('error', 'Time clash with existing note. Please select different times.');
+          return res.render(`note/new`, { existingNotes,req });
+        }
+    }
     const newNote = new Note({
+      StartTime,
+      EndTime,
       title,
       note,
       user: req.user._id,
     });
     await newNote.save();
+    existingNotes=[] 
     req.flash('success', 'Note added successfully!');
     res.redirect(`/user/${req.user._id}`);
   } catch (error) {
@@ -285,11 +290,214 @@ app.post('/user/:id', ensureAuthenticated, async (req, res) => {
   }
 });
 
+app.post('/user/:noteId/freeTime', ensureAuthenticated, async (req, res) => {
+  try {
+      const userId = req.params.noteId;
+      const freeTime = req.body.date;
+      const month = freeTime.slice(5, 7);
+      const date = freeTime.slice(8, 10);
+      const formattedDate = `${month}-${date}-${new Date().getFullYear()}`;
+      
+      const startOfDayUTC = new Date(freeTime);
+      startOfDayUTC.setUTCHours(6, 30, 0, 0);
+      const endOfDayUTC = new Date(startOfDayUTC);  
+      endOfDayUTC.setUTCHours(18, 29, 59, 999);   
+
+
+      console.log(startOfDayUTC, endOfDayUTC, "this will be the start and end of day");
+
+      const userEvents = await Note.find({
+          user: userId,
+          completed: false,
+          StartTime: { $gte: startOfDayUTC, $lte: endOfDayUTC }
+      });
+
+      userEvents.sort((a, b) => a.StartTime - b.StartTime);
+
+      const freeTimeSlots = [];
+      let startTimeUTC = startOfDayUTC;
+
+      for (const event of userEvents) {
+          const eventStartTimeUTC = event.StartTime;
+
+          const duration = moment(eventStartTimeUTC).diff(startTimeUTC);
+
+          if (duration > 0) {
+              freeTimeSlots.push({ startTime: startTimeUTC.toISOString(), endTime: eventStartTimeUTC.toISOString() });
+          }
+
+          startTimeUTC = event.EndTime;
+      }
+
+      if (moment(endOfDayUTC).diff(startTimeUTC) > 0) {
+          freeTimeSlots.push({ startTime: startTimeUTC.toISOString(), endTime: endOfDayUTC.toISOString() });
+      }
+
+      console.log(freeTimeSlots, "this will be the free time slots");
+
+      res.render('note/free.ejs', { freeTimeSlots, req, noteId: userId });
+  } catch (error) {
+      console.error(error);
+      req.flash('error', 'Error fetching free time. Please try again.');
+      res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/user/:noteId/freetime', ensureAuthenticated, async (req, res) => {
+    try{
+      console.log(req.params.noteId);
+      res.render('note/free.ejs', { freeTimeSlots:[],req, noteId: req.params.noteId });
+    } catch (error) {
+      console.error(error);
+      req.flash('error', 'Error fetching free time. Please try again.');
+      res.status(500).send('Internal Server Error');
+  }
+})
+
+app.get('/user/:userId/complete', ensureAuthenticated, async (req, res) => {
+  try {
+    const currentUserID = req.params.userId;
+    const userNotes = await Note.find({ user: currentUserID, completed: true });
+    let title = "Completed Notes"; // Change the title to reflect completed notes
+
+    res.render('note/complete.ejs', { allNotes: userNotes, req, user: req.user, title });
+  } catch (error) {
+    console.error(error);
+    req.flash('error', 'Error fetching completed notes. Please try again.');
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/user/:userId/search', ensureAuthenticated, async (req, res) => {
+  try {
+    const currentUserID = req.params.userId;
+    let { title } = req.query; // Use let instead of const for title
+    const userNotes = await Note.find({ title: { $regex: title, $options: 'i' } });
+
+    console.log(userNotes.length, "length");
+
+    let date = [];
+
+    if (userNotes.length === 0) {
+      let searchDate;
+      try {
+        const year = new Date().getFullYear();
+        const searchDateString = year + "-" + title; // Concatenate with current year
+        searchDate = new Date(searchDateString);
+
+        if (isNaN(searchDate.getTime())) {
+          throw new Error('Invalid date');
+        }
+
+        console.log(searchDate, "date");
+
+        // Get the start and end of the provided date
+        const startOfDay = new Date(searchDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(searchDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        date = await Note.find({ 
+          $or: [
+            { StartTime: { $gte: startOfDay, $lte: endOfDay } },
+            { EndTime: { $gte: startOfDay, $lte: endOfDay } }
+          ]
+        });
+      } catch (error) {
+        console.error('Error parsing date:', error);
+        searchDate = null;
+      }
+    }
+
+    if (userNotes.length === 0 && (!date || date.length === 0)) {
+      title = "No matches found";
+    }
+
+    res.render('note/search.ejs', { allNotes: userNotes.concat(date), req, user: req.user, title });
+  } catch (error) {
+    console.error(error);
+    req.flash('error', 'Error adding note. Please try again.');
+    res.status(500).render('note/search.ejs', { allNotes: [], req, user: req.user, title: "Error" });
+  }
+});
+
+
+
+
+
+app.post('/user/note/:id/completed', ensureAuthenticated, async (req, res) => {
+  try{
+    const { id } = req.params;
+    const completed = true
+    console.log(id,completed);
+
+    const updatedNote = await Note.findByIdAndUpdate(id, { completed }, { new: true });
+    console.log(updatedNote, "updated");
+
+    req.flash('success', 'Saved successfully!');
+    res.redirect(`/user/${req.user._id}`);
+  }
+  catch (error) {
+    console.error(error);
+    req.flash('error', 'Error adding note. Please try again.');
+    res.status(500).send('Internal Server Error');
+  }
+})
+app.post('/user/note/:id/uncompleted', ensureAuthenticated, async (req, res) => {
+  try{
+    const { id } = req.params;
+    const completed = false
+    console.log(id,completed);
+
+    const updatedNote = await Note.findByIdAndUpdate(id, { completed }, { new: true });
+    console.log(updatedNote, "updated");
+
+    req.flash('success', 'Saved successfully!');
+    res.redirect(`/user/${req.user._id}/complete`);
+  }
+  catch (error) {
+    console.error(error);
+    req.flash('error', 'Error adding note. Please try again.');
+    res.status(500).send('Internal Server Error');
+  }
+})
+
 app.put('/user/note/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, note } = req.body;
-    const updatedNote = await Note.findByIdAndUpdate(id, { title, note }, { new: true });
+    const { StartTime, EndTime, title, note, completed } = req.body;
+    const startTime = new Date(StartTime);
+    const endTime = new Date(EndTime);
+    const currentTime = new Date();
+    const isStartTimeValid = startTime > currentTime;
+    const isEndTimeValid = endTime > currentTime;
+
+    if (!isStartTimeValid || !isEndTimeValid) {
+      req.flash('error', 'Invalid time. Please select a valid time.');
+      return res.redirect(`/user/${req.user._id}`);
+    }
+
+    const existingNotes = await Note.find({
+      user: req.user._id,
+      $or: [
+        { $and: [{ StartTime: { $lte: StartTime } }, { EndTime: { $gte: StartTime } }] },
+        { $and: [{ StartTime: { $lte: EndTime } }, { EndTime: { $gte: EndTime } }] },
+        { $and: [{ StartTime: { $gte: StartTime } }, { EndTime: { $lte: EndTime } }] }
+      ]
+    });
+
+    if (existingNotes.length > 0) {
+      if(existingNotes[0]._id.toString() !== id) {
+        console.log(existingNotes[0]._id.toString(), id,"\n\n\nthese were the id...\n\n\n");
+        req.flash('error', 'Time clash with existing note. Please select different times.');
+        return res.redirect(`/user/${req.user._id}`);
+      }
+    }
+
+    const isCompleted = completed === 'on';
+
+    const updatedNote = await Note.findByIdAndUpdate(id, { StartTime:startTime, EndTime:endTime, completed: isCompleted, title, note }, { new: true });
+    console.log(updatedNote, "updated");
     req.flash('success', 'Saved successfully!');
     res.redirect(`/user/${req.user._id}`);
   } catch (error) {
@@ -314,10 +522,11 @@ app.get('/logout', (req, res) => {
 
 app.delete('/user/note/:userId', async (req, res) => {
   try {
+    console.log(req.params, "note id");
     const { userId } = req.params;
     const currentUserID = req.user._id;
 
-    await Todo.deleteMany({ note: userId });
+    // await Todo.deleteMany({ note: userId });
     const deletedNote = await Note.findByIdAndDelete(userId);
     if (!deletedNote) {
       return res.status(404).send('Note not found');
@@ -330,68 +539,36 @@ app.delete('/user/note/:userId', async (req, res) => {
   }
 });
 
-function randomcolor() {
-  var letters = '0123456789ABCDEF';
-  var color = '#';
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
-
 app.get('/user/:userId', ensureAuthenticated, async (req, res) => {
   const currentUserID = req.user._id;
   try {
-    const userNotes = await Note.find({ user: currentUserID });
-
-    // Generate a random color for each note
-    const colors = userNotes.map(() => randomcolor());
-
-    res.render('note/index.ejs', { allNotes: userNotes, req, user: req.user, colors });
+    
+    const userNotes = await Note.find({
+       user: currentUserID,
+       completed: false
+      });
+    const  title  = "All Notes";  
+    res.render('note/index.ejs', { allNotes: userNotes, req, user: req.user,title});
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
   }
 });
 
+app.get('/user/:id/new', ensureAuthenticated, async (req, res) => {
+  let existingNotes = []
+  res.render('note/new.ejs', { req, user: req.user,existingNotes});
+})
 
+// app.get('/user/todolist', ensureAuthenticated, async (req, res) => {
+//   const noteId = req.session.noteId;  
 
-
-
-
-
-app.get('/user/:id/new', ensureAuthenticated, (req, res) => {
-  let allTodos = req.user.todos;
-  res.render('note/new.ejs',{allTodos});
-});
-
-app.post('/user/:id', ensureAuthenticated, async (req, res) => {
-  try {
-    const { title, note } = req.body;
-    const newNote = new Note({
-      title,
-      note,
-      user: req.user._id,
-    });
-    await newNote.save();
-    req.flash('success', 'Note added successfully!');
-    res.redirect(`/user/${req.user._id}`);
-  } catch (error) {
-    console.error(error);
-    req.flash('error', 'Error adding note. Please try again.');
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-app.get('/user/todolist', ensureAuthenticated, async (req, res) => {
-  const noteId = req.session.noteId;  
-
-    const title = await Note.find({ noteId }).select('title');
-    if(title.lenght>0){
-      const title = await Note.find({ noteId }).select('note');
-    }
-  res.render('note/todolist.ejs',{title});
-});
+//     const title = await Note.find({ noteId }).select('title');
+//     if(title.lenght>0){
+//       const title = await Note.find({ noteId }).select('note');
+//     }
+//   res.render('note/todolist.ejs',{title});
+// });
 
 //for showing all notes
 // app.get('/user/:id/todos/', ensureAuthenticated, async (req, res) => {
@@ -420,40 +597,39 @@ app.get('/user/todolist', ensureAuthenticated, async (req, res) => {
 //   }
 // });
 
-app.post('/todoadd', async (req, res) => {
-  try {
-    const { text, dateTime } = req.body;
+// app.post('/todoadd', async (req, res) => {
+//   try {
+//     const { text, DateTime } = req.body;
 
-    const noteId = req.session.noteId;  
-    console.log(noteId, "nodeId");
-    console.log("NoteId:", noteId);
-    const newTodo = new Todo({ text, user: req.user._id, note: noteId, dateTime });
+//     const noteId = req.session.noteId;  
+//     console.log(noteId, "nodeId");
+//     console.log("NoteId:", noteId);
+//     const newTodo = new Note({ text, user: req.user._id, note: noteId, DateTime });
 
-    await newTodo.save();
+//     await newTodo.save();
 
-    const note = await Note.findById(noteId);
+//     const note = await Note.findById(noteId);
 
-    if (!note) {
-      console.log("Note not found");
-      return res.status(404).send('Note not found');
-    }
+//     if (!note) {
+//       console.log("Note not found");
+//       return res.status(404).send('Note not found');
+//     }
 
-    note.todos.push(newTodo._id);
+//     // note.push(newTodo._id);
 
-    await note.save();
+//     await note.save();
 
-    res.redirect(`/user/note/${noteId}`);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Internal Server Error');
-  }
-});
+//     res.redirect(`/user/note/${noteId}`);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
 app.get('/user/note/:noteId', ensureAuthenticated, async (req, res) => {
   const currentUserID = req.user._id;
 
   try {
     const { noteId } = req.params;
-
     console.log("sayd ye user ke id h",noteId);
     // Fetch the note based on the ID
     const note = await Note.findOne({ _id: noteId, user: currentUserID });
@@ -465,18 +641,11 @@ app.get('/user/note/:noteId', ensureAuthenticated, async (req, res) => {
     // Set noteId in the session
     req.session.noteId = note._id;
 
-    // Fetch todos associated with the current note
-    const allTodos = await Todo.find({ user: currentUserID, note: noteId });
-
-    //associatedTodos
-    const associatedTodos = await Todo.find({ note: note._id })
-     const filteredTodos = allTodos.filter(todo => todo.note && todo.note.toString() === note._id.toString())
     //logging
     console.log('NoteId:', note._id)
     console.log('note:', JSON.stringify(note)) 
-    console.log('Number of associatedTodos:', associatedTodos.length) 
-    console.log('Number of filteredTodos:', filteredTodos.length)
-    res.render('note/show.ejs', { req, note, allTodos, moment, Todo, NoteId: note._id,filteredTodos, associatedTodos});
+    console.log(note, "note");
+    res.render('note/show.ejs', { req, note,  moment, NoteId: note._id});
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
@@ -512,45 +681,6 @@ app.get('/user/note/:noteId', ensureAuthenticated, async (req, res) => {
 //   }
 // });
 
-app.put('/user/:id/todos/:todoId', async (req, res) => {
-  try {
-    const { todoId } = req.params;
-    const { text, date, time, completed } = req.body;
-    const dateTimeString = `${date}T${time}:00`;
-    const noteId = req.session.noteId;
-    console.log('Combined DateTime String:', dateTimeString);
-    const dateTime = new Date(dateTimeString);
-    console.log('Parsed DateTime:', dateTime);
-    const isCompleted = completed === 'on';
-
-    const updatedTodo = await Todo.findByIdAndUpdate(
-      todoId,
-      { text, dateTime, completed: isCompleted },
-      { new: true }
-    );
-
-    req.flash('success', 'Todo updated successfully!');
-    res.redirect(`/user/note/${noteId}`);
-  } catch (error) {
-    console.error(error);
-    req.flash('error', 'Error updating todo. Please try again.');
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-app.get('/user/:id/todos/:todoId', ensureAuthenticated , async (req, res) => {
-  try {
-    const { id,todoId } = req.params;
-    const allTodos = await Todo.find({ user: req.user._id });
-    const currentTodo = allTodos.find(todo => todo._id.toString() === todoId);
-    req.session.noteId = id;
-    console.log(  allTodos, currentTodo );
-    res.render('note/edit-todo.ejs', { allTodos, currentTodo,moment, req });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Internal Server Error');
-  }
-});
 
 // app.post('/user/:id/todos/:todoId', async (req, res) => {
 //   try {
@@ -576,42 +706,19 @@ app.get('/user/:id/todos/:todoId', ensureAuthenticated , async (req, res) => {
 //   }
 // });
 
-app.get('/user/:id/todos/:todoId/edit', ensureAuthenticated, async (req, res) => {
-  try {
-    const { id,todoId } = req.params;
-
-    const currentTodo = await Todo.findOne({ _id: todoId, user: req.user._id });
-
-    if (!currentTodo) {
-      req.flash('error', 'Todo not found.');
-      return res.redirect(`/user/${req.user._id}/todos`);
-    }
-
-    res.render('note/edit-todo.ejs', { currentTodo, moment, req });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-  
-  
-
-app.delete('/user/:id/todos/:todoId', ensureAuthenticated, async (req, res) => {
-  try {
-    const { todoId,id } = req.params;
-    console.log(id);
-    const deletedTodo = await Todo.findByIdAndDelete(todoId);
-    req.flash('success', 'Todo deleted successfully!');
-    res.redirect(`/user/note/${id}`);
-  } catch (error) {
-    console.error(error);
-    req.flash('error', 'Error deleting todo. Please try again.');
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-
-
+// app.delete('/user/:id/todos/:todoId', ensureAuthenticated, async (req, res) => {
+//   try {
+//     const { todoId,id } = req.params;
+//     console.log(id);
+//     const deletedTodo = await Todo.findByIdAndDelete(todoId);
+//     req.flash('success', 'Todo deleted successfully!');
+//     res.redirect(`/user/note/${id}`);
+//   } catch (error) {
+//     console.error(error);
+//     req.flash('error', 'Error deleting todo. Please try again.');
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
 
 app.get('/auth/google',
   passport.authenticate('google', { scope:
