@@ -369,14 +369,11 @@ allNotes.sort((a, b) => new Date(a.StartTime) - new Date(b.StartTime));
       </div>
   </div>
 <% } else { %>
-  <div class="container mt-4">
-    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-1 g-4">
-      <div class="col">
-        <div class="news mt-3">
-          <h5 class="card-title">No Notes Found</h5>
-        </div>
-      </div>
-    </div>  
+  <div class="col">
+    <div class="news mt-3">
+      <h5 class="card-title">No Notes Found</h5>
+<div class="card h-100 tcentre"><p class="plusheight" style="color: #2980b9+;">+</p></div>
+    </div>
   </div>
 <% } %>
 
