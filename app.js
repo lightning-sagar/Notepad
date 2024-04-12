@@ -53,7 +53,7 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, '/public')));
 app.set('views', path.join(__dirname, 'views'));
 
-// console.log(process.env.ATLAS_DB);
+console.log(process.env.ATLAS_DB);
 
 
 
@@ -63,7 +63,8 @@ app.set('views', path.join(__dirname, 'views'));
 
 
 async function main() {
-  await mongoose.connect('mongodb://127.0.0.1:27017/Todo');
+  await mongoose.connect(process.env.ATLAS_DB);
+  // await mongoose.connect('mongodb://127.0.0.1:27017/Todo');
   console.log('Connected to DB');
 }
 
@@ -71,21 +72,21 @@ main().catch((err) =>
   console.log(err)
 );
 
-// const store = MongoStore.create({
-//   mongoUrl: process.env.ATLAS_DB,
-//   touchAfter: 24 * 60 * 60,
-//   crypto: {
-//     secret: process.env.SECRET
-//   }
-// })
+const store = MongoStore.create({
+  mongoUrl: process.env.ATLAS_DB,
+  touchAfter: 24 * 60 * 60,
+  crypto: {
+    secret: process.env.SECRET
+  }
+})
 
-// store.on('error', function (e) {
-//   console.log('session store error', e)
-// })
+store.on('error', function (e) {
+  console.log('session store error', e)
+})
 
 app.use(
   session({
-    // store,
+    store,
     secret: process.env.SECRET,
     resave: true,
     saveUninitialized: true,
@@ -96,8 +97,6 @@ app.use(
     },
   })
 );
-
-
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -372,7 +371,7 @@ app.get('/user/:userId/complete', ensureAuthenticated, async (req, res) => {
 app.get('/user/:userId/search', ensureAuthenticated, async (req, res) => {
   try {
     const currentUserID = req.params.userId;
-    let { title } = req.query; // Use let instead of const for title
+    let { title } = req.query;  
     const userNotes = await Note.find({ title: { $regex: title, $options: 'i' } });
 
     console.log(userNotes.length, "length");
@@ -383,7 +382,7 @@ app.get('/user/:userId/search', ensureAuthenticated, async (req, res) => {
       let searchDate;
       try {
         const year = new Date().getFullYear();
-        const searchDateString = year + "-" + title; // Concatenate with current year
+        const searchDateString = year + "-" + title;  
         searchDate = new Date(searchDateString);
 
         if (isNaN(searchDate.getTime())) {
@@ -392,7 +391,6 @@ app.get('/user/:userId/search', ensureAuthenticated, async (req, res) => {
 
         console.log(searchDate, "date");
 
-        // Get the start and end of the provided date
         const startOfDay = new Date(searchDate);
         startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date(searchDate);
@@ -527,7 +525,6 @@ app.delete('/user/note/:userId', async (req, res) => {
     const { userId } = req.params;
     const currentUserID = req.user._id;
 
-    // await Todo.deleteMany({ note: userId });
     const deletedNote = await Note.findByIdAndDelete(userId);
     if (!deletedNote) {
       return res.status(404).send('Note not found');
@@ -632,17 +629,14 @@ app.get('/user/note/:noteId', ensureAuthenticated, async (req, res) => {
   try {
     const { noteId } = req.params;
     console.log("sayd ye user ke id h",noteId);
-    // Fetch the note based on the ID
     const note = await Note.findOne({ _id: noteId, user: currentUserID });
 
     if (!note) {
       return res.status(404).send('Note not found');
     }
 
-    // Set noteId in the session
     req.session.noteId = note._id;
 
-    //logging
     console.log('NoteId:', note._id)
     console.log('note:', JSON.stringify(note)) 
     console.log(note, "note");

@@ -83,38 +83,43 @@
 </form>
 <% function convertUTCToIST(utcTime) {
     const utcDate = new Date(utcTime);
-    const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+    const istOffset = 5.5 * 60 * 60 * 1000;
     const istTimestamp = utcDate.getTime() + istOffset;
     const istDate = new Date(istTimestamp);
     return istDate.toISOString().slice(0, 10) + ' ' + istDate.toISOString().slice(11, 16);
 }
 function amtopm(time) {
-    if(time>12){
-        time=time-12;
-        return time + " PM";
+    let hour = parseInt(time.slice(11, 13));  
+    let min = time.slice(14, 16); 
+    let period = "AM";  
+    if (hour > 12) {
+        period = "PM";
+        if (hour > 12) {
+            hour %= 12;
+        }
+    }
 
-    }
-    else{
-        return time + " AM";
-    }
+    return hour + ":" + min + " " + period;
 }
 %>
 
 
 <% if (freeTimeSlots && freeTimeSlots.length > 0) { %>
-<h2>Free Time Slots (IST)</h2>
+<h2>Free Time Slots</h2>
 <table>
     <thead>
         <tr>
-            <th>Start Time (IST)</th>
-            <th>End Time (IST)</th>
+            <th>Start Time </th>
+            <th>End Time</th>
         </tr>
     </thead>
     <tbody>
         <% for (let i = 0; i < freeTimeSlots.length; i++) { %>
             <tr>    
-                <td><%= convertUTCToIST(freeTimeSlots[i].startTime).slice(11, 16) %></td>
-                <td><%= convertUTCToIST(freeTimeSlots[i].endTime).slice(11, 16) %></td>
+                <% let amt = convertUTCToIST(freeTimeSlots[i].startTime).slice(11, 16)
+                 %>
+                <td><%= amtopm(convertUTCToIST(freeTimeSlots[i].startTime)) %></td>
+                <td><%= amtopm(convertUTCToIST(freeTimeSlots[i].endTime)) %></td>
             </tr>
         <% } %>
     </tbody>
