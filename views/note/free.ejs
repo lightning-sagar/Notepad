@@ -89,17 +89,14 @@
     return istDate.toISOString().slice(0, 10) + ' ' + istDate.toISOString().slice(11, 16);
 }
 function amtopm(time) {
-    let hour = parseInt(time.slice(11, 13));  
-    let min = time.slice(14, 16); 
-    let period = "AM";  
-    if (hour > 12) {
-        period = "PM";
-        if (hour > 12) {
-            hour %= 12;
-        }
-    }
+    if(time>12){
+        time=time-12;
+        return time + " PM";
 
-    return hour + ":" + min + " " + period;
+    }
+    else{
+        return time + " AM";
+    }
 }
 %>
 
@@ -116,10 +113,8 @@ function amtopm(time) {
     <tbody>
         <% for (let i = 0; i < freeTimeSlots.length; i++) { %>
             <tr>    
-                <% let amt = convertUTCToIST(freeTimeSlots[i].startTime).slice(11, 16)
-                 %>
-                <td><%= amtopm(convertUTCToIST(freeTimeSlots[i].startTime)) %></td>
-                <td><%= amtopm(convertUTCToIST(freeTimeSlots[i].endTime)) %></td>
+                <td><%= convertUTCToIST(freeTimeSlots[i].startTime).slice(11, 16) %></td>
+                <td><%= convertUTCToIST(freeTimeSlots[i].endTime).slice(11, 16) %></td>
             </tr>
         <% } %>
     </tbody>
