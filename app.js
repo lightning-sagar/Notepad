@@ -19,6 +19,7 @@ const notifier = require('node-notifier');
 
 const app = express();
 const cron = require('node-cron');
+const moment = require('moment-timezone'); 
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
@@ -27,7 +28,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 require('dotenv').config();
 require('./auth.js')
-const moment = require('moment');
 const { log } = require('console');
 
 const ensureAuthenticated = (req, res, next) => {
@@ -53,7 +53,7 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, '/public')));
 app.set('views', path.join(__dirname, 'views'));
 
-console.log(process.env.ATLAS_DB);
+// console.log(process.env.ATLAS_DB);
 
 
 
@@ -64,7 +64,6 @@ console.log(process.env.ATLAS_DB);
 
 async function main() {
   await mongoose.connect(process.env.ATLAS_DB);
-  // await mongoose.connect('mongodb://127.0.0.1:27017/Todo');
   console.log('Connected to DB');
 }
 
@@ -97,6 +96,8 @@ app.use(
     },
   })
 );
+
+
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -134,13 +135,13 @@ app.get('/signup', (req, res) => {
 
 cron.schedule('* * * * *', async () => {
   try {
-    const currentDateTime = new Date();
-    console.log('Current Date and Time:', currentDateTime);
+    const currentDateTime = moment.tz('Asia/Kolkata'); // Get current datetime in IST
+    console.log('Current Date and Time:', currentDateTime.format());
 
     const upcomingTodos = await Note.find({
       StartTime: {
-        $gte: new Date(currentDateTime.getTime() - 5 * 60 * 1000), // 5 minutes before StartTime
-        $lte: new Date(currentDateTime.getTime() + 24 * 60 * 60 * 1000) // 24 hours after StartTime
+        $gte: currentDateTime.clone().subtract(5, 'minutes').toDate(), // 5 minutes before StartTime
+        $lte: currentDateTime.clone().add(1, 'days').toDate() // 24 hours after StartTime
       },
       emailSent: { $ne: true }
     });
@@ -156,7 +157,7 @@ cron.schedule('* * * * *', async () => {
         const timeDifferenceStart = moment(note.StartTime).diff(currentDateTime, 'milliseconds');
         const timeDifferenceEnd = moment(note.EndTime).diff(currentDateTime, 'milliseconds');
 
-        console.log('Current Date:', currentDateTime);
+        console.log('Current Date:', currentDateTime.format());
         console.log('Todo StartTime:', note.StartTime);
         console.log('Todo EndTime:', note.EndTime);
 
@@ -371,7 +372,7 @@ app.get('/user/:userId/complete', ensureAuthenticated, async (req, res) => {
 app.get('/user/:userId/search', ensureAuthenticated, async (req, res) => {
   try {
     const currentUserID = req.params.userId;
-    let { title } = req.query;  
+    let { title } = req.query; // Use let instead of const for title
     const userNotes = await Note.find({ title: { $regex: title, $options: 'i' } });
 
     console.log(userNotes.length, "length");
@@ -382,7 +383,7 @@ app.get('/user/:userId/search', ensureAuthenticated, async (req, res) => {
       let searchDate;
       try {
         const year = new Date().getFullYear();
-        const searchDateString = year + "-" + title;  
+        const searchDateString = year + "-" + title; // Concatenate with current year
         searchDate = new Date(searchDateString);
 
         if (isNaN(searchDate.getTime())) {
@@ -391,6 +392,7 @@ app.get('/user/:userId/search', ensureAuthenticated, async (req, res) => {
 
         console.log(searchDate, "date");
 
+        // Get the start and end of the provided date
         const startOfDay = new Date(searchDate);
         startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date(searchDate);
@@ -525,6 +527,7 @@ app.delete('/user/note/:userId', async (req, res) => {
     const { userId } = req.params;
     const currentUserID = req.user._id;
 
+    // await Todo.deleteMany({ note: userId });
     const deletedNote = await Note.findByIdAndDelete(userId);
     if (!deletedNote) {
       return res.status(404).send('Note not found');
@@ -629,14 +632,17 @@ app.get('/user/note/:noteId', ensureAuthenticated, async (req, res) => {
   try {
     const { noteId } = req.params;
     console.log("sayd ye user ke id h",noteId);
+    // Fetch the note based on the ID
     const note = await Note.findOne({ _id: noteId, user: currentUserID });
 
     if (!note) {
       return res.status(404).send('Note not found');
     }
 
+    // Set noteId in the session
     req.session.noteId = note._id;
 
+    //logging
     console.log('NoteId:', note._id)
     console.log('note:', JSON.stringify(note)) 
     console.log(note, "note");
