@@ -163,7 +163,6 @@ cron.schedule('* * * * *', async () => {
         console.log('Current Date:', currentDateTime.format());
         console.log('Todo StartTime:', startTimeInIST.format());
         console.log('Todo EndTime:', endTimeInIST.format());
-        console.log('Todo difference:', timeDifferenceEnd.format());
         console.log('Todo difference without:', timeDifferenceStart);
         
 
