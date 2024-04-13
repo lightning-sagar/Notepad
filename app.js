@@ -154,12 +154,15 @@ cron.schedule('* * * * *', async () => {
 
     for (const note of upcomingTodos) {
       if (!note.completed) {
-        const timeDifferenceStart = moment(note.StartTime).diff(currentDateTime, 'milliseconds');
-        const timeDifferenceEnd = moment(note.EndTime).diff(currentDateTime, 'milliseconds');
+        const startTimeInIST = moment(note.StartTime).tz('Asia/Kolkata'); // Convert StartTime to IST
+        const endTimeInIST = moment(note.EndTime).tz('Asia/Kolkata'); // Convert EndTime to IST
+
+        const timeDifferenceStart = startTimeInIST.diff(currentDateTime, 'milliseconds');
+        const timeDifferenceEnd = endTimeInIST.diff(currentDateTime, 'milliseconds');
 
         console.log('Current Date:', currentDateTime.format());
-        console.log('Todo StartTime:', note.StartTime);
-        console.log('Todo EndTime:', note.EndTime);
+        console.log('Todo StartTime:', startTimeInIST.format());
+        console.log('Todo EndTime:', endTimeInIST.format());
 
         if (timeDifferenceStart <= 5 * 60 * 1000 && timeDifferenceStart >= 0) {  
           await sendEmail(note, `Reminder for todo: ${note.title} - 5 minutes before StartTime`);
@@ -178,7 +181,6 @@ cron.schedule('* * * * *', async () => {
     console.error('Error in cron job:', error);
   }
 });
-
 async function notification(subject) {
   notifier.notify({
     title: 'Notification',
