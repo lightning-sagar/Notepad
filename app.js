@@ -163,6 +163,9 @@ cron.schedule('* * * * *', async () => {
         console.log('Current Date:', currentDateTime.format());
         console.log('Todo StartTime:', startTimeInIST.format());
         console.log('Todo EndTime:', endTimeInIST.format());
+        console.log('Todo difference:', timeDifferenceEnd.format());
+        console.log('Todo difference without:', timeDifferenceStart);
+        
 
         if (timeDifferenceStart <= 5 * 60 * 1000 && timeDifferenceStart >= 0) {  
           await sendEmail(note, `Reminder for todo: ${note.title} - 5 minutes before StartTime`);
