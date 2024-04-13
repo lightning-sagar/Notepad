@@ -161,7 +161,7 @@ cron.schedule('* * * * *', async () => {
         const timeDifferenceEnd = endTimeInIST.diff(currentDateTime, 'milliseconds');
 
         console.log('Current Date:', currentDateTime.format());
-        console.log('Todo StartTime:', startTimeInIST.format());
+        console.log('Todo StartTime:', startTimeInIST);
         console.log('Todo EndTime:', endTimeInIST.format());
         console.log('Todo difference without:', timeDifferenceStart);
         
