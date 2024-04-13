@@ -135,9 +135,13 @@ app.get('/signup', (req, res) => {
 
 cron.schedule('* * * * *', async () => {
   try {
-    // Get the current date and time in IST (GMT+5:30)
+    // Get the current date and time in UTC
     const currentDateTime = new Date();
     console.log('Current Date and Time:', currentDateTime);
+
+    // Adjust the current date and time to IST (GMT+5:30)
+    currentDateTime.setHours(currentDateTime.getHours() + 5);
+    currentDateTime.setMinutes(currentDateTime.getMinutes() + 30);
 
     const upcomingTodos = await Note.find({
       StartTime: {
@@ -156,15 +160,21 @@ cron.schedule('* * * * *', async () => {
     for (const note of upcomingTodos) {
       if (!note.completed) {
         // Convert todo start time and end time to UTC
-        const startTimeUTC = new Date(note.StartTime);
-        const endTimeUTC = new Date(note.EndTime);
+        const startTime = new Date(note.StartTime);
+        const endTime = new Date(note.EndTime);
 
-        const timeDifferenceStart = startTimeUTC.getTime() - currentDateTime.getTime();
-        const timeDifferenceEnd = endTimeUTC.getTime() - currentDateTime.getTime();
+        // Adjust todo start and end times to IST (GMT+5:30)
+        startTime.setHours(startTime.getHours() + 5);
+        startTime.setMinutes(startTime.getMinutes() + 30);
+        endTime.setHours(endTime.getHours() + 5);
+        endTime.setMinutes(endTime.getMinutes() + 30);
+
+        const timeDifferenceStart = startTime.getTime() - currentDateTime.getTime();
+        const timeDifferenceEnd = endTime.getTime() - currentDateTime.getTime();
 
         console.log('Current Date:', currentDateTime);
-        console.log('Todo StartTime:', startTimeUTC);
-        console.log('Todo EndTime:', endTimeUTC);
+        console.log('Todo StartTime:', startTime);
+        console.log('Todo EndTime:', endTime);
         console.log('Time difference to start:', timeDifferenceStart);
         console.log('Time difference to end:', timeDifferenceEnd);
 
