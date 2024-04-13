@@ -135,13 +135,13 @@ app.get('/signup', (req, res) => {
 
 cron.schedule('* * * * *', async () => {
   try {
-    const currentDateTime = moment.tz('Asia/Kolkata'); // Get current datetime in IST
-    console.log('Current Date and Time:', currentDateTime.format());
+    const currentDateTime = new Date();
+    console.log('Current Date and Time:', currentDateTime);
 
     const upcomingTodos = await Note.find({
       StartTime: {
-        $gte: currentDateTime.clone().subtract(5, 'minutes').toDate(), // 5 minutes before StartTime
-        $lte: currentDateTime.clone().add(1, 'days').toDate() // 24 hours after StartTime
+        $gte: new Date(currentDateTime.getTime() - 5 * 60 * 1000), // 5 minutes before StartTime
+        $lte: new Date(currentDateTime.getTime() + 24 * 60 * 60 * 1000) // 24 hours after StartTime
       },
       emailSent: { $ne: true }
     });
@@ -154,24 +154,20 @@ cron.schedule('* * * * *', async () => {
 
     for (const note of upcomingTodos) {
       if (!note.completed) {
-        const startTimeInIST = moment(note.StartTime).tz('Asia/Kolkata'); // Convert StartTime to IST
-        const endTimeInIST = moment(note.EndTime).tz('Asia/Kolkata'); // Convert EndTime to IST
+        const timeDifferenceStart = moment(note.StartTime).diff(currentDateTime, 'milliseconds');
+        const timeDifferenceEnd = moment(note.EndTime).diff(currentDateTime, 'milliseconds');
 
-        const timeDifferenceStart = startTimeInIST.diff(currentDateTime, 'milliseconds');
-        const timeDifferenceEnd = endTimeInIST.diff(currentDateTime, 'milliseconds');
+        console.log('Current Date:', currentDateTime);
+        console.log('Todo StartTime:', note.StartTime);
+        console.log('Todo EndTime:', note.EndTime);
+        console.log("todo diff:",timeDifferenceStart)
 
-        console.log('Current Date:', currentDateTime.format());
-        console.log('Todo StartTime:', startTimeInIST);
-        console.log('Todo EndTime:', endTimeInIST.format());
-        console.log('Todo difference without:', timeDifferenceStart);
-        
-
-        if (timeDifferenceStart <= 5 * 60 * 1000 && timeDifferenceStart >= 0) {  
+        if (Math.abs(timeDifferenceStart) <= 5 * 60 * 1000) {  
           await sendEmail(note, `Reminder for todo: ${note.title} - 5 minutes before StartTime`);
           await notification(`Reminder for todo: ${note.title} - 5 minutes before StartTime`);
           note.emailSent = true;
         }
-        if (timeDifferenceEnd <= 5 * 60 * 1000 && timeDifferenceEnd >= 0) {  
+        if (Math.abs(timeDifferenceEnd) <= 5 * 60 * 1000) {  
           await sendEmail(note, `Reminder for todo: ${note.title} - 5 minutes before EndTime`);
           note.emailSent = true;
         }
@@ -183,6 +179,7 @@ cron.schedule('* * * * *', async () => {
     console.error('Error in cron job:', error);
   }
 });
+
 async function notification(subject) {
   notifier.notify({
     title: 'Notification',
