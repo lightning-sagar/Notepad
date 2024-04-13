@@ -135,8 +135,13 @@ app.get('/signup', (req, res) => {
 
 cron.schedule('* * * * *', async () => {
   try {
+    // Get the current date and time in UTC
     const currentDateTime = new Date();
     console.log('Current Date and Time:', currentDateTime);
+
+    // Adjust the current date and time to IST (GMT+5:30)
+    currentDateTime.setHours(currentDateTime.getHours() + 5);
+    currentDateTime.setMinutes(currentDateTime.getMinutes() + 30);
 
     const upcomingTodos = await Note.find({
       StartTime: {
@@ -154,20 +159,30 @@ cron.schedule('* * * * *', async () => {
 
     for (const note of upcomingTodos) {
       if (!note.completed) {
-        const timeDifferenceStart = moment(note.StartTime).diff(currentDateTime, 'milliseconds');
-        const timeDifferenceEnd = moment(note.EndTime).diff(currentDateTime, 'milliseconds');
+        // Convert todo start time and end time to IST (GMT+5:30)
+        const startTime = new Date(note.StartTime);
+        startTime.setHours(startTime.getHours() + 5);
+        startTime.setMinutes(startTime.getMinutes() + 30);
+
+        const endTime = new Date(note.EndTime);
+        endTime.setHours(endTime.getHours() + 5);
+        endTime.setMinutes(endTime.getMinutes() + 30);
+
+        const timeDifferenceStart = startTime.getTime() - currentDateTime.getTime();
+        const timeDifferenceEnd = endTime.getTime() - currentDateTime.getTime();
 
         console.log('Current Date:', currentDateTime);
-        console.log('Todo StartTime:', note.StartTime);
-        console.log('Todo EndTime:', note.EndTime);
-        console.log("todo diff:",timeDifferenceStart)
+        console.log('Todo StartTime:', startTime);
+        console.log('Todo EndTime:', endTime);
+        console.log('Time difference to start:', timeDifferenceStart);
+        console.log('Time difference to end:', timeDifferenceEnd);
 
-        if (Math.abs(timeDifferenceStart) <= 5 * 60 * 1000) {  
+        if (Math.abs(timeDifferenceStart) <= 5 * 60 * 1000 && timeDifferenceStart >= 0) {  
           await sendEmail(note, `Reminder for todo: ${note.title} - 5 minutes before StartTime`);
           await notification(`Reminder for todo: ${note.title} - 5 minutes before StartTime`);
           note.emailSent = true;
         }
-        if (Math.abs(timeDifferenceEnd) <= 5 * 60 * 1000) {  
+        if (Math.abs(timeDifferenceEnd) <= 5 * 60 * 1000 && timeDifferenceEnd >= 0) {  
           await sendEmail(note, `Reminder for todo: ${note.title} - 5 minutes before EndTime`);
           note.emailSent = true;
         }
