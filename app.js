@@ -195,6 +195,7 @@ cron.schedule('* * * * *', async () => {
   }
 });
 
+
 async function notification(subject) {
   notifier.notify({
     title: 'Notification',
