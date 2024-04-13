@@ -163,12 +163,6 @@ cron.schedule('* * * * *', async () => {
         const startTime = new Date(note.StartTime);
         const endTime = new Date(note.EndTime);
 
-        // Adjust todo start and end times to IST (GMT+5:30)
-        startTime.setHours(startTime.getHours() + 5);
-        startTime.setMinutes(startTime.getMinutes() + 30);
-        endTime.setHours(endTime.getHours() + 5);
-        endTime.setMinutes(endTime.getMinutes() + 30);
-
         const timeDifferenceStart = startTime.getTime() - currentDateTime.getTime();
         const timeDifferenceEnd = endTime.getTime() - currentDateTime.getTime();
 
@@ -195,6 +189,7 @@ cron.schedule('* * * * *', async () => {
     console.error('Error in cron job:', error);
   }
 });
+
 
 async function notification(subject) {
   notifier.notify({
