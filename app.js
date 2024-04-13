@@ -175,21 +175,20 @@ cron.schedule('* * * * *', async () => {
         if (Math.abs(timeDifferenceStart) <= 5 * 60 * 1000 && timeDifferenceStart >= 0) {  
           await sendEmail(note, `Reminder for todo: ${note.title} - 5 minutes before StartTime`);
           await notification(`Reminder for todo: ${note.title} - 5 minutes before StartTime`);
-          note.emailSent = true;
+          note.emailSent = true; // Mark the todo as email sent
         }
         if (Math.abs(timeDifferenceEnd) <= 5 * 60 * 1000 && timeDifferenceEnd >= 0) {  
           await sendEmail(note, `Reminder for todo: ${note.title} - 5 minutes before EndTime`);
-          note.emailSent = true;
+          note.emailSent = true; // Mark the todo as email sent
         }
 
-        await note.save();
+        await note.save(); // Save the changes to the todo
       }
     }
   } catch (error) {
     console.error('Error in cron job:', error);
   }
 });
-
 
 async function notification(subject) {
   notifier.notify({
